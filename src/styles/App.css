@@ -62,9 +62,6 @@ section.content {
   font-size: 18px;
 }
 
-footer {
-  background-color: whitesmoke;
-}
 .post-footer {
   display: flex;
 }
@@ -73,15 +70,17 @@ footer {
   font-size: 12px;
 }
 .post-card {
-  border: 1px solid #d3d4d6;
-  border-radius: 5px;
+  border-bottom: 1px solid #d3d4d6;
   margin: 2px 0;
   padding: 10px 5px 5px 5px;
-  background-color: whitesmoke;
+}
+
+.post-card:last-child {
+  border-bottom: none;
 }
 
 .post-card:hover {
-  border: 1px solid #9eb0d4;
+  background-color: skyblue;
 }
 .post-container {
   padding: 0 2px 2px 2px;
@@ -114,6 +113,4 @@ footer {
   border-radius: 10px;
 }
 
-body {
-  background-color: #bfccd4;
-}
+@import "Layout.css";

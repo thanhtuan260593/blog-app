@@ -1,9 +1,6 @@
 import { PostOverview } from "components/Post";
 import { PostRestriction } from "../resources/models/Post";
-
-export interface TagProp {
-  value: string;
-}
+import { TagProp } from "./TagProp";
 
 export interface PostTagProp {
   tag: TagProp;

@@ -4,8 +4,11 @@ import RichTextEditor from "components/Editors/Editor";
 import { Button, Switch as Sw, InputGroup } from "@blueprintjs/core";
 import { postAPI } from "resources/api/post";
 import { Switch } from "react-router-dom";
+import { TagSelect } from "components/Tag";
 import { CreatePostRequest, PostRestriction } from "resources/models/Post";
 import { Alert } from "components/Alert";
+import { Layout3_7 } from "layout/Layout3_7";
+import { TagCreate } from "components/TagCreate";
 
 const initialValue = [
   {
@@ -57,37 +60,49 @@ export const ComposePost = () => {
   };
 
   return (
-    <div>
-      <Alert isOpen={alert.isOpen} message={alert.message} />
-      <div style={{ display: "flex" }}>
-        <div style={{ flexGrow: 1 }}>
-          <h2 style={{ marginBottom: "0" }}>Soạn bài viết</h2>
+    <Layout3_7>
+      <div>
+        <Alert isOpen={alert.isOpen} message={alert.message} />
+        <div style={{ display: "flex" }}>
+          <div style={{ flexGrow: 1 }}>
+            <h2 style={{ marginBottom: "0" }}>Soạn bài viết</h2>
+          </div>
+          <div>
+            <Button intent="primary" onClick={handleSave}>
+              Lưu
+            </Button>
+          </div>
         </div>
-        <div>
-          <Button intent="primary" onClick={handleSave}>
-            Lưu
-          </Button>
-        </div>
+        <hr />
+        <h3>Tiêu đề</h3>
+        <InputGroup
+          style={{ width: "100%" }}
+          large
+          placeholder="Tiêu đề"
+          value={request.subject}
+          name="subject"
+          onChange={handleInputChange}
+        />
+        <h3>Nội dung</h3>
+        <RichTextEditor
+          initialValue={JSON.stringify(initialValue)}
+          onChange={handleContentChange}
+        />
+        <h3>Thiết lập</h3>
+        <Sw checked={request.canComment} onChange={handleCanCommentChange}>
+          Có thể bình luận
+        </Sw>
+        <h3>Tag</h3>
+        <TagSelect
+          onChange={(tags) =>
+            setRequest((request) => ({
+              ...request,
+              tags: tags.map((tag) => tag.value),
+            }))
+          }
+        />
       </div>
-      <hr />
-      <h3>Tiêu đề</h3>
-      <InputGroup
-        style={{ width: "100%" }}
-        large
-        placeholder="Tiêu đề"
-        value={request.subject}
-        name="subject"
-        onChange={handleInputChange}
-      />
-      <h3>Nội dung</h3>
-      <RichTextEditor
-        initialValue={JSON.stringify(initialValue)}
-        onChange={handleContentChange}
-      />
-      <h3>Thiết lập</h3>
-      <Sw checked={request.canComment} onChange={handleCanCommentChange}>
-        Có thể bình luận
-      </Sw>
-    </div>
+      <TagCreate />
+    </Layout3_7>
   );
 };

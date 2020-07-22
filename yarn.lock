@@ -1109,6 +1109,15 @@
     classnames "^2.2"
     tslib "~1.10.0"
 
+"@blueprintjs/select@^3.13.5":
+  version "3.13.5"
+  resolved "https://registry.yarnpkg.com/@blueprintjs/select/-/select-3.13.5.tgz#397b1833893a9a80ca111048b3ffa1335dc52649"
+  integrity sha512-GFdLhmD23JvWueLNDBZjE5+Kii1zT/R7vx/Ta5fPv3gdSnUBMyGZMkQAjKWrn7o7xyOE1im5G2A0sdhcfcs3iw==
+  dependencies:
+    "@blueprintjs/core" "^3.30.0"
+    classnames "^2.2"
+    tslib "~1.10.0"
+
 "@cnakazawa/watch@^1.0.3":
   version "1.0.4"
   resolved "https://registry.yarnpkg.com/@cnakazawa/watch/-/watch-1.0.4.tgz#f864ae85004d0fcab6f50be9141c4da368d1656a"

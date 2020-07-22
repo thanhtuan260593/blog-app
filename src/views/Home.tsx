@@ -77,7 +77,7 @@ export const Home = () => {
         </div>
       </div>
       <div style={{ display: "flex" }}>
-        <div className="post-card" style={{ width: "300px" }}>
+        <div className="left-sidebar" style={{ width: "300px" }}>
           <h3>Văn phòng</h3>
           <h3>Văn phòng</h3>
           <h3>Văn phòng</h3>
@@ -89,9 +89,11 @@ export const Home = () => {
           <h3>Văn phòng</h3>
           <h3>Văn phòng</h3>
         </div>
-        <PostList posts={posts} />
-        <div className="post-card" style={{ width: "300px" }}>
-          <h3>Nhân viên xuất sắc</h3>
+        <div className="content">
+          <PostList posts={posts} />
+        </div>
+        <div className="right-sidebar" style={{ width: "300px" }}>
+          <h2 style={{ textAlign: "center" }}>Nhân viên xuất sắc</h2>
         </div>
       </div>
     </div>

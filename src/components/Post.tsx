@@ -5,12 +5,12 @@ import {
   PostProps,
 } from "components/PostProp";
 
-import { Tag, Icon } from "@blueprintjs/core";
+import { Tag, Icon, Colors } from "@blueprintjs/core";
 
 export const PostOverview = ({ post }: { post: PostOverviewProps }) => {
   return (
     <div className="post-card">
-      <h4 className="bp3-heading post-header">
+      <h4 className="bp3-heading post-header" style={{ color: Colors.BLUE1 }}>
         {post.subject}{" "}
         {post.postTags &&
           post.postTags.map((u) => (
@@ -22,11 +22,10 @@ export const PostOverview = ({ post }: { post: PostOverviewProps }) => {
       {post.imageURL && <img src={post.imageURL} style={{ width: "100%" }} />}
       <div style={{ display: "flex" }}>
         <div style={{ flexGrow: 1 }}>
-          <Tag icon="comment">14</Tag>
-          <Tag icon="eye-open"> 2122</Tag>
-          <Tag icon="heart" intent="danger">
-            1
-          </Tag>
+          <Icon icon="comment" color={Colors.GRAY5} /> <b>14</b> {"  "}{" "}
+          <Icon icon="eye-open" color={Colors.GRAY5} /> <b>2122</b>
+          {"  "}
+          <Icon icon="heart" color={Colors.GRAY5} /> <b>1</b>
         </div>
         <i className="post-meta">
           {post.createdBy} -{" "}
