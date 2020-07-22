@@ -4,7 +4,7 @@ import { PostProps } from "components/PostProp";
 
 const createPost = async (req: CreatePostRequest) => {
   return await put<PostProps>(
-    `${process.env.REACT_APP_API_URL}/post/create`,
+    `${process.env.REACT_APP_API_URL}/post`,
     JSON.stringify(req)
   );
 };

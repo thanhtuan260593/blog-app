@@ -63,7 +63,11 @@ export const Header = () => {
           ))}
       </NavbarGroup>
       <NavbarGroup align="right">
-        <InputGroup type="search" placeholder="Tìm kiếm" />
+        <InputGroup
+          type="search"
+          style={{ minWidth: "500px" }}
+          placeholder="Tìm kiếm"
+        />
         <NavbarDivider />
         <Popover
           content={

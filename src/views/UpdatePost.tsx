@@ -26,24 +26,28 @@ const initialState: UpdatePostRequest = {
 type TParams = { id: string };
 export const UpdatePost = ({ match }: RouteComponentProps<TParams>) => {
   const [request, setRequest] = useState<UpdatePostRequest>();
+  const [id, setId] = useState<number>();
   const [alert, setAlert] = useState({ isOpen: false, message: "" });
   const history = useHistory();
   useEffect(() => {
     const id = Number(match.params.id);
-    postAPI.getPost(id).then((u) => {
-      const request: UpdatePostRequest = {
-        content: u.content,
-        subject: u.subject,
-        canComment: u.canComment,
-        postRestrictionType: u.postRestrictionType,
-        accessUsers: u.postAccessUsers,
-      };
-      setRequest(request);
-    });
+    postAPI
+      .getPost(id)
+      .then((u) => {
+        const request: UpdatePostRequest = {
+          content: u.content,
+          subject: u.subject,
+          canComment: u.canComment,
+          postRestrictionType: u.postRestrictionType,
+          accessUsers: u.postAccessUsers,
+        };
+        setRequest(request);
+        setId(id);
+      })
+      .catch((err) => setAlert({ isOpen: true, message: err.message }));
   }, []);
   const handleSave = () => {
-    if (request == null) return;
-    const id = Number(match.params.id);
+    if (request == null || id == null) return;
     postAPI
       .updatePost(id, request)
       .then((u) => {
@@ -87,7 +91,7 @@ export const UpdatePost = ({ match }: RouteComponentProps<TParams>) => {
       <Alert isOpen={alert.isOpen} message={alert.message} />
       <div style={{ display: "flex" }}>
         <div style={{ flexGrow: 1 }}>
-          <h2 style={{ marginBottom: "0" }}>Soạn bài viết</h2>
+          <h2 style={{ marginBottom: "0" }}>Cập nhật bài viết #{id}</h2>
         </div>
         <div>
           <Button intent="primary" onClick={handleSave}>

@@ -10,10 +10,6 @@ import { Tag, Icon } from "@blueprintjs/core";
 export const PostOverview = ({ post }: { post: PostOverviewProps }) => {
   return (
     <div className="post-card">
-      <i className="post-meta">
-        {post.createdBy} -{" "}
-        {new Date(post.dateCreated).toLocaleDateString("vi-VN")}
-      </i>
       <h4 className="bp3-heading post-header">
         {post.subject}{" "}
         {post.postTags &&
@@ -25,13 +21,17 @@ export const PostOverview = ({ post }: { post: PostOverviewProps }) => {
       </h4>
       {post.imageURL && <img src={post.imageURL} style={{ width: "100%" }} />}
       <div style={{ display: "flex" }}>
-        <div>
+        <div style={{ flexGrow: 1 }}>
           <Tag icon="comment">14</Tag>
           <Tag icon="eye-open"> 2122</Tag>
           <Tag icon="heart" intent="danger">
             1
           </Tag>
         </div>
+        <i className="post-meta">
+          {post.createdBy} -{" "}
+          {new Date(post.dateCreated).toLocaleDateString("vi-VN")}
+        </i>
       </div>
     </div>
   );
