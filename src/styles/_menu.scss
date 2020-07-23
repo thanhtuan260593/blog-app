@@ -1,0 +1,24 @@
+.menu-item {
+  color: $textColor;
+  font-weight: 500;
+  font-size: 18px;
+  padding: 5px;
+  border-bottom: 1px solid $borderColor;
+  cursor: grab;
+  .icon {
+    margin-right: 10px;
+    margin-bottom: 2px;
+  }
+}
+
+.menu-item:last-child {
+  border: none;
+}
+.menu-item:hover {
+  background-color: $contentActiveColor;
+}
+
+.menu-item.select {
+  background-color: $primary;
+  color: $white;
+}

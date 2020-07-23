@@ -9,8 +9,18 @@ import { CreatePostRequest, PostRestriction } from "resources/models/Post";
 import { Alert } from "components/Alert";
 import { Layout3_7 } from "layout/Layout3_7";
 import { TagCreate } from "components/TagCreate";
+import { TagProp } from "components/TagProp";
+import { MyQuillEditor } from "components/Editors/MyQuillEditor";
 
 const initialValue = [
+  {
+    type: "paragraph",
+    children: [{ text: "" }],
+  },
+  {
+    type: "paragraph",
+    children: [{ text: "" }],
+  },
   {
     type: "paragraph",
     children: [{ text: "" }],
@@ -58,22 +68,20 @@ export const ComposePost = () => {
       canComment: !r.canComment,
     }));
   };
+  const handleTagsChange = (tags: TagProp[]) =>
+    setRequest((request) => ({
+      ...request,
+      tags: tags.map((tag) => tag.value),
+    }));
 
   return (
     <Layout3_7>
       <div>
         <Alert isOpen={alert.isOpen} message={alert.message} />
-        <div style={{ display: "flex" }}>
-          <div style={{ flexGrow: 1 }}>
-            <h2 style={{ marginBottom: "0" }}>Soạn bài viết</h2>
-          </div>
-          <div>
-            <Button intent="primary" onClick={handleSave}>
-              Lưu
-            </Button>
-          </div>
-        </div>
-        <hr />
+        <h2>Soạn bài viết</h2>
+        <Button intent="primary" onClick={handleSave}>
+          Lưu
+        </Button>
         <h3>Tiêu đề</h3>
         <InputGroup
           style={{ width: "100%" }}
@@ -84,23 +92,15 @@ export const ComposePost = () => {
           onChange={handleInputChange}
         />
         <h3>Nội dung</h3>
-        <RichTextEditor
-          initialValue={JSON.stringify(initialValue)}
-          onChange={handleContentChange}
-        />
+
+        <MyQuillEditor onChange={handleContentChange} value={request.content} />
+
         <h3>Thiết lập</h3>
         <Sw checked={request.canComment} onChange={handleCanCommentChange}>
           Có thể bình luận
         </Sw>
         <h3>Tag</h3>
-        <TagSelect
-          onChange={(tags) =>
-            setRequest((request) => ({
-              ...request,
-              tags: tags.map((tag) => tag.value),
-            }))
-          }
-        />
+        <TagSelect onChange={handleTagsChange} />
       </div>
       <TagCreate />
     </Layout3_7>

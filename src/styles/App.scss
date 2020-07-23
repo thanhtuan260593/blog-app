@@ -1,0 +1,36 @@
+@import "styles/colors.scss";
+@import "styles/_post.scss";
+@import "slide.scss";
+@import "layout.scss";
+@import "menu";
+
+.App-logo {
+  height: 40vmin;
+  pointer-events: none;
+}
+
+.ql-container.ql-snow {
+  background-color: white;
+}
+
+img.fit {
+  width: 100%;
+  height: 100%;
+}
+
+.bp3-tag {
+  margin: 1px;
+}
+.bp3-navbar-heading {
+  font-weight: 800;
+}
+.bp3-navbar {
+  background-color: $blue3;
+  border-bottom-color: $red5;
+  border-bottom-style: "solid";
+  border-bottom-width: "4px";
+}
+
+body {
+  background-color: $gray5;
+}

@@ -1,4 +1,4 @@
-import React, { useState, ChangeEvent } from "react";
+import React, { useState, ChangeEvent, useEffect } from "react";
 import { InputGroup, Button, ControlGroup, Tag } from "@blueprintjs/core";
 import { tagAPI } from "resources/api/tag";
 import { TagProp } from "./TagProp";
@@ -25,10 +25,14 @@ export const TagCreate = () => {
       })
       .catch((err) => alert(err.message));
   };
+
+  useEffect(() => {
+    loadTags("");
+  }, []);
+
   return (
     <>
       <h2>Thêm tag mới</h2>
-      <hr />
       <ControlGroup fill={true} vertical={false}>
         <InputGroup
           placeholder="Tiêu đề"
@@ -42,7 +46,7 @@ export const TagCreate = () => {
           onClick={handleSave}
         ></Button>
       </ControlGroup>
-      <hr />
+      <h2>Danh sách các tag</h2>
       <div>
         {tags.map((tag) => (
           <Tag large key={tag.value}>

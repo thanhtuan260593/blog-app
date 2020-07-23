@@ -5,7 +5,6 @@ import { Editor, Transforms, createEditor } from "slate";
 import { withHistory } from "slate-history";
 import { Icon } from "@blueprintjs/core";
 import { Button, Toolbar } from "./components";
-import MarkdownSerializer from "slate-md-serializer";
 
 const HOTKEYS = {
   "mod+b": "bold",

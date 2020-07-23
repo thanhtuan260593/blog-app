@@ -1,6 +1,6 @@
 import { CreatePostRequest, UpdatePostRequest } from "resources/models/Post";
 import { put, get, post, _delete } from "./helper";
-import { PostProps } from "components/PostProp";
+import { PostProps } from "components/Post/PostProp";
 
 const createPost = async (req: CreatePostRequest) => {
   return await put<PostProps>(
@@ -32,7 +32,7 @@ const getPosts = async (
   var tagQuery = tags.reduce((pre, cur) => {
     return pre + "&tags=" + cur;
   }, "");
-  return await get<PostProps>(
+  return await get<PostProps[]>(
     `${process.env.REACT_APP_API_URL}/post?pageIndex=${pageIndex}&pageRows=${pageRows}${tagQuery}`
   );
 };

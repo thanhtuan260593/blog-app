@@ -1,5 +1,5 @@
 import React from "react";
-import "styles/App.sass";
+import "styles/App.scss";
 import { Footer } from "layout/Footer";
 import { Header } from "layout/Header";
 import { Home } from "views/Home";
@@ -9,15 +9,16 @@ import "../node_modules/@blueprintjs/icons/lib/css/blueprint-icons.css";
 import "../node_modules/@blueprintjs/core/lib/css/blueprint.css";
 import { ComposePost } from "views/ComposePost";
 import { PostView } from "views/Post";
-import * as dotenv from "dotenv";
 import { UpdatePost } from "views/UpdatePost";
+import { Slide } from "components/Slide";
 
 function App() {
   return (
     <div className="App">
       <BrowserRouter>
         <Header />
-        <section className="content">
+        <Slide />
+        <section className="app-content">
           <Switch>
             <Route exact path="/" component={Home} />
             <Route exact path="/create" component={ComposePost} />

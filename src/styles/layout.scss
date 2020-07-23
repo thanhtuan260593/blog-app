@@ -1,0 +1,31 @@
+.content {
+  border-top-color: $red5;
+  border-top-style: solid;
+  border-top-width: 4px;
+  display: flex;
+  padding: 0 10px;
+  flex-grow: 1;
+  background-color: $light-gray5;
+  padding-bottom: 50px;
+  .left {
+    border-right: 1px solid $borderColor;
+    padding: 0 10px;
+    width: 300px;
+  }
+
+  .right {
+    border-left: 1px solid $borderColor;
+    padding: 0 10px;
+    width: 300px;
+  }
+  .header {
+    padding: 0 10px;
+  }
+}
+
+h2 {
+  color: $primary;
+  font-weight: 1000;
+  font-size: 20;
+  border-bottom: 1px solid $borderColor2;
+}

@@ -1,0 +1,29 @@
+.post-container {
+    padding: 0 0 2px 0;
+    .post-card {
+        padding: 0px 10px 0px 10px;
+        .post-content {
+            padding: 10px 0 5px 0;
+            .post-header {
+                font-weight: 600;
+                font-size: 18px;
+                color: $textColor;
+                padding: 0;
+                margin: 0;
+            }
+            .post-footer {
+                display: flex;
+            }
+            .post-meta {
+                color: $metaColor;
+                font-size: 12px;
+            }
+        }
+    }
+    .post-card:last-child {
+        border-bottom: none;
+    }
+    .post-card:hover {
+        background-color: $contentActiveColor;
+    }
+}
