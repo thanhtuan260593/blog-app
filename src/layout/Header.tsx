@@ -32,7 +32,14 @@ const items: MenuItemProps[] = [
 
 export const Header = () => {
   return (
-    <Navbar style={{ backgroundColor: Colors.BLUE3 }}>
+    <Navbar
+      style={{
+        backgroundColor: Colors.BLUE3,
+        borderBottomColor: Colors.RED5,
+        borderBottomStyle: "solid",
+        borderBottomWidth: "4px",
+      }}
+    >
       <NavbarGroup align="left">
         <NavbarHeading style={{ color: Colors.WHITE }}>DOMESCO</NavbarHeading>
         <NavbarDivider style={{ borderColor: Colors.WHITE }} />
