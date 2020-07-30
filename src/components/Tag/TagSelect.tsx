@@ -19,6 +19,7 @@ const useSearch = () =>
   useDebouncedSearch<TagProps[]>((text) =>
     tagAPI.get(text ?? "").then((u) => u ?? [])
   );
+
 export const TagSelect = (props: TagSelectProp) => {
   const { inputText, setInputText, searchResults } = useSearch();
 
@@ -80,6 +81,17 @@ export const TagSelect = (props: TagSelectProp) => {
     );
   };
 
+  const handleEnter = (event: React.KeyboardEvent<HTMLElement>) => {
+    if (event.keyCode == 13) {
+      props.onEnter &&
+        props.onEnter({
+          text: inputText,
+          event,
+          tags: selectedTags?.map((tag) => tag.value),
+        });
+    }
+  };
+
   useEffect(() => {
     setInputText("");
   }, []);
@@ -93,12 +105,14 @@ export const TagSelect = (props: TagSelectProp) => {
       items={searchResults.result ?? []}
       onItemSelect={handleSelect}
       selectedItems={selectedTags}
+      openOnKeyDown={props.onEnter != null}
       onQueryChange={handleQueryChange}
       query={inputText}
       tagInputProps={{
         onRemove: handleRemove,
         rightElement: clearButton,
         tagProps: { intent: "primary" },
+        onKeyDown: handleEnter,
       }}
     />
   );

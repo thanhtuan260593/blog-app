@@ -72,6 +72,20 @@ const detachTag = async (postId: number, tag: string) => {
   );
 };
 
+const searchPosts = async (
+  pageIndex: number,
+  pageRows: number,
+  tags?: string[],
+  keywords?: string[]
+) => {
+  const query = { pageIndex, pageRows, tags };
+  const url = queryString.stringifyUrl({
+    url: `${process.env.REACT_APP_API_URL}/post/search`,
+    query,
+  });
+  return await get<PostProps[]>(queryString.stringifyUrl({ query, url }));
+};
+
 export const postAPI = {
   createPost,
   updatePost,
@@ -81,4 +95,5 @@ export const postAPI = {
   getCount,
   attachTag,
   detachTag,
+  searchPosts,
 };
