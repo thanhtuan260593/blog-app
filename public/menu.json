@@ -1,0 +1,36 @@
+[
+  {
+    "text": "Home",
+    "icon": "home",
+    "tags": []
+  },
+  {
+    "text": "Thông báo",
+    "icon": "volume-up",
+    "tags": ["annouce"]
+  },
+  {
+    "text": "Sự kiện",
+    "icon": "timeline-events",
+    "tags": ["event"]
+  },
+  {
+    "text": "Đố vui",
+    "icon": "help",
+    "tags": ["quiz"]
+  },
+  {
+    "text": "Phòng ban",
+    "icon": "office",
+    "children": [
+      {
+        "text": "CNTT",
+        "tags": ["cntt"]
+      },
+      {
+        "text": "Tài chính",
+        "tags": ["finance"]
+      }
+    ]
+  }
+]

@@ -1,12 +1,20 @@
 import React, { useCallback, useMemo, useState, useEffect } from "react";
 import isHotkey from "is-hotkey";
-import { Editable, withReact, useSlate, Slate } from "slate-react";
-import { Editor, Transforms, createEditor } from "slate";
+import {
+  Editable,
+  withReact,
+  useSlate,
+  Slate,
+  ReactEditor,
+  RenderLeafProps,
+  RenderElementProps,
+} from "slate-react";
+import { Editor, Transforms, createEditor, Node } from "slate";
 import { withHistory } from "slate-history";
-import { Icon } from "@blueprintjs/core";
+import { Icon, IconName } from "@blueprintjs/core";
 import { Button, Toolbar } from "./components";
 
-const HOTKEYS = {
+const HOTKEYS: { [id: string]: string } = {
   "mod+b": "bold",
   "mod+i": "italic",
   "mod+u": "underline",
@@ -14,9 +22,11 @@ const HOTKEYS = {
 };
 
 const LIST_TYPES = ["numbered-list", "bulleted-list"];
-
-export const RichTextViewer = ({ initialValue }) => {
-  const [value, setValue] = useState();
+interface RichTextViewerProps {
+  initialValue: string;
+}
+export const RichTextViewer = ({ initialValue }: RichTextViewerProps) => {
+  const [value, setValue] = useState<Node[]>([]);
   const editor = useMemo(() => withHistory(withReact(createEditor())), []);
   const renderElement = useCallback((props) => <Element {...props} />, []);
   const renderLeaf = useCallback((props) => <Leaf {...props} />, []);
@@ -24,14 +34,18 @@ export const RichTextViewer = ({ initialValue }) => {
     if (initialValue == null) {
       return;
     }
-    console.log(initialValue);
-    setValue(JSON.parse(initialValue));
+    try {
+      const nodes: Node[] = JSON.parse(initialValue);
+      setValue(nodes);
+    } catch {
+      setValue([]);
+    }
   }, [initialValue]);
   if (value == null) {
     return <div>Loading...</div>;
   }
   return (
-    <Slate editor={editor} value={value}>
+    <Slate editor={editor} value={value} onChange={() => {}}>
       <Editable
         readOnly
         renderElement={renderElement}
@@ -41,16 +55,25 @@ export const RichTextViewer = ({ initialValue }) => {
   );
 };
 
-const RichTextEditor = ({ onChange, initialValue }) => {
-  const [value, setValue] = useState(JSON.parse(initialValue));
+interface RichTextEditor {
+  onChange: (value: string) => void;
+  initialValue: string;
+  clear?: () => string;
+}
+
+const RichTextEditor = ({ onChange, initialValue, clear }: RichTextEditor) => {
+  const [value, setValue] = useState<Node[]>(JSON.parse(initialValue));
   const renderElement = useCallback((props) => <Element {...props} />, []);
   const renderLeaf = useCallback((props) => <Leaf {...props} />, []);
   const editor = useMemo(() => withHistory(withReact(createEditor())), []);
-  const handleChange = (value) => {
+  const handleChange = (value: Node[]) => {
     setValue(value);
     if (value == null) return "[]";
     onChange(JSON.stringify(value));
   };
+  useEffect(() => {
+    clear && setValue(JSON.parse(clear()));
+  }, [clear]);
 
   return (
     <Slate editor={editor} value={value} onChange={handleChange}>
@@ -66,6 +89,7 @@ const RichTextEditor = ({ onChange, initialValue }) => {
         <BlockButton format="bulleted-list" icon="properties" />
       </Toolbar>
       <Editable
+        className="richtext-editor"
         renderElement={renderElement}
         renderLeaf={renderLeaf}
         placeholder="Enter some rich text…"
@@ -73,7 +97,7 @@ const RichTextEditor = ({ onChange, initialValue }) => {
         autoFocus
         onKeyDown={(event) => {
           for (const hotkey in HOTKEYS) {
-            if (isHotkey(hotkey, event)) {
+            if (isHotkey(hotkey, event.nativeEvent)) {
               event.preventDefault();
               const mark = HOTKEYS[hotkey];
               toggleMark(editor, mark);
@@ -85,12 +109,12 @@ const RichTextEditor = ({ onChange, initialValue }) => {
   );
 };
 
-const toggleBlock = (editor, format) => {
+const toggleBlock = (editor: ReactEditor, format: string) => {
   const isActive = isBlockActive(editor, format);
   const isList = LIST_TYPES.includes(format);
 
   Transforms.unwrapNodes(editor, {
-    match: (n) => LIST_TYPES.includes(n.type),
+    match: (n) => LIST_TYPES.includes(n.type as string),
     split: true,
   });
 
@@ -104,7 +128,7 @@ const toggleBlock = (editor, format) => {
   }
 };
 
-const toggleMark = (editor, format) => {
+const toggleMark = (editor: ReactEditor, format: string) => {
   const isActive = isMarkActive(editor, format);
 
   if (isActive) {
@@ -114,20 +138,21 @@ const toggleMark = (editor, format) => {
   }
 };
 
-const isBlockActive = (editor, format) => {
-  const [match] = Editor.nodes(editor, {
+const isBlockActive = (editor: ReactEditor, format: string) => {
+  const iter = Editor.nodes(editor, {
     match: (n) => n.type === format,
   });
+  const [match] = Array.from(iter);
 
   return !!match;
 };
 
-const isMarkActive = (editor, format) => {
+const isMarkActive = (editor: ReactEditor, format: string) => {
   const marks = Editor.marks(editor);
   return marks ? marks[format] === true : false;
 };
 
-const Element = ({ attributes, children, element }) => {
+const Element = ({ attributes, children, element }: RenderElementProps) => {
   switch (element.type) {
     case "block-quote":
       return <blockquote {...attributes}>{children}</blockquote>;
@@ -146,7 +171,7 @@ const Element = ({ attributes, children, element }) => {
   }
 };
 
-const Leaf = ({ attributes, children, leaf }) => {
+const Leaf = ({ attributes, children, leaf }: RenderLeafProps) => {
   if (leaf.bold) {
     children = <strong>{children}</strong>;
   }
@@ -166,7 +191,12 @@ const Leaf = ({ attributes, children, leaf }) => {
   return <span {...attributes}>{children}</span>;
 };
 
-const BlockButton = ({ format, icon }) => {
+interface ToolbarButtonProps {
+  format: string;
+  icon: IconName;
+}
+
+const BlockButton = ({ format, icon }: ToolbarButtonProps) => {
   const editor = useSlate();
   return (
     <Button
@@ -181,7 +211,7 @@ const BlockButton = ({ format, icon }) => {
   );
 };
 
-const MarkButton = ({ format, icon }) => {
+const MarkButton = ({ format, icon }: ToolbarButtonProps) => {
   const editor = useSlate();
   return (
     <Button
@@ -195,42 +225,5 @@ const MarkButton = ({ format, icon }) => {
     </Button>
   );
 };
-
-// const initialValue = [
-//   {
-//     type: "paragraph",
-//     children: [
-//       { text: "This is editable " },
-//       { text: "rich", bold: true },
-//       { text: " text, " },
-//       { text: "much", italic: true },
-//       { text: " better than a " },
-//       { text: "<textarea>", code: true },
-//       { text: "!" },
-//     ],
-//   },
-//   {
-//     type: "paragraph",
-//     children: [
-//       {
-//         text:
-//           "Since it's rich text, you can do things like turn a selection of text ",
-//       },
-//       { text: "bold", bold: true },
-//       {
-//         text:
-//           ", or add a semantically rendered block quote in the middle of the page, like this:",
-//       },
-//     ],
-//   },
-//   {
-//     type: "block-quote",
-//     children: [{ text: "A wise quote." }],
-//   },
-//   {
-//     type: "paragraph",
-//     children: [{ text: "Try it out for yourself!" }],
-//   },
-// ];
 
 export default RichTextEditor;

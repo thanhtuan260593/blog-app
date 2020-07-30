@@ -1,13 +1,12 @@
 import React from "react";
 import { IconNames } from "@blueprintjs/icons";
-import { Classes, AnchorButton, Menu } from "@blueprintjs/core";
+import { Classes, AnchorButton } from "@blueprintjs/core";
 
 interface Props {
   className?: string;
 }
 
 export const Footer = (props: Props) => {
-  const menuStyle = { margin: -5, padding: 0, marginBottom: 5 };
   return (
     <footer>
       <div style={{ display: "flex", justifyContent: "center" }}>

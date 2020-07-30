@@ -1,9 +1,12 @@
-@import "styles/colors.scss";
-@import "styles/_post.scss";
-@import "slide.scss";
-@import "layout.scss";
+@import "variables";
+@import "colors";
+@import "post";
+@import "slide";
+@import "layout";
 @import "menu";
-
+@import "input";
+@import "comment";
+@import "navbar";
 .App-logo {
   height: 40vmin;
   pointer-events: none;
@@ -13,11 +16,6 @@
   background-color: white;
 }
 
-img.fit {
-  width: 100%;
-  height: 100%;
-}
-
 .bp3-tag {
   margin: 1px;
 }
@@ -25,10 +23,18 @@ img.fit {
   font-weight: 800;
 }
 .bp3-navbar {
-  background-color: $blue3;
-  border-bottom-color: $red5;
+  background-color: $primary;
+  border-bottom-color: $secondary;
   border-bottom-style: "solid";
   border-bottom-width: "4px";
+}
+.app-content {
+  margin-top: 60px;
+}
+
+.inverse {
+  color: white;
+  background-color: $primary;
 }
 
 body {

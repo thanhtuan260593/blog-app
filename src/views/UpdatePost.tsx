@@ -1,31 +1,26 @@
 import React, { useState, useEffect } from "react";
-import { useHistory, RouteComponentProps } from "react-router-dom";
+import { useHistory, RouteComponentProps, Link } from "react-router-dom";
 import RichTextEditor from "components/Editors/Editor";
-import { Button, Switch as Sw, InputGroup, Spinner } from "@blueprintjs/core";
-import { postAPI } from "resources/api/post";
-import { Switch } from "react-router-dom";
 import {
-  CreatePostRequest,
-  PostRestriction,
-  UpdatePostRequest,
-} from "resources/models/Post";
-import { Alert } from "components/Alert";
-const initialValue = [
-  {
-    type: "paragraph",
-    children: [{ text: "" }],
-  },
-];
-const initialState: UpdatePostRequest = {
-  content: JSON.stringify(initialValue),
-  subject: "",
-  canComment: false,
-  postRestrictionType: PostRestriction.NONE,
-  accessUsers: [],
-};
+  Button,
+  Switch as Sw,
+  InputGroup,
+  Spinner,
+  Icon,
+  FormGroup,
+  Label,
+} from "@blueprintjs/core";
+import { postAPI } from "resources/api/post";
+import { UpdatePostRequest } from "resources/models/PostAPI";
+import { Alert } from "components/Commons/Alert";
+import { Layout2 } from "layout/Layout2";
+import { TagSelect } from "components//Tag/TagSelect";
+import { TagCreate } from "components/Tag/TagCreate";
+
 type TParams = { id: string };
 export const UpdatePost = ({ match }: RouteComponentProps<TParams>) => {
   const [request, setRequest] = useState<UpdatePostRequest>();
+  const [tags, setTags] = useState<string[]>();
   const [id, setId] = useState<number>();
   const [alert, setAlert] = useState({ isOpen: false, message: "" });
   const history = useHistory();
@@ -42,10 +37,11 @@ export const UpdatePost = ({ match }: RouteComponentProps<TParams>) => {
           accessUsers: u.postAccessUsers,
         };
         setRequest(request);
+        setTags(u.tags ?? []);
         setId(id);
       })
       .catch((err) => setAlert({ isOpen: true, message: err.message }));
-  }, []);
+  }, [match.params.id]);
   const handleSave = () => {
     if (request == null || id == null) return;
     postAPI
@@ -82,42 +78,76 @@ export const UpdatePost = ({ match }: RouteComponentProps<TParams>) => {
     });
   };
 
+  const handleSelect = (tag: string) => {
+    if (id == null) return;
+    postAPI.attachTag(id, tag).then(() => {
+      setTags((tags) => [...(tags ?? []), tag]);
+    });
+  };
+
+  const handleRemove = (tag: string) => {
+    if (id == null) return;
+    postAPI.detachTag(id, tag).then(() => {
+      setTags((tags) =>
+        tags?.reduce((pre, cur) => {
+          if (cur === tag) return pre;
+          return [...pre, cur];
+        }, [] as string[])
+      );
+    });
+  };
+
   if (request == null) {
     return <Spinner />;
   }
 
   return (
-    <div>
-      <Alert isOpen={alert.isOpen} message={alert.message} />
-      <div style={{ display: "flex" }}>
-        <div style={{ flexGrow: 1 }}>
-          <h2 style={{ marginBottom: "0" }}>Cập nhật bài viết #{id}</h2>
+    <Layout2>
+      <div>
+        <Alert isOpen={alert.isOpen} message={alert.message} />
+        <div className="card-header align-left">
+          <h2>Cập nhật bài viết #{id}</h2>
+          <Link to={`/post/${id}`}>
+            <Button minimal intent="primary" icon="undo" />
+          </Link>
+          <Button
+            minimal
+            intent="primary"
+            icon={<Icon icon="floppy-disk" />}
+            onClick={handleSave}
+          />
         </div>
-        <div>
-          <Button intent="primary" onClick={handleSave}>
-            Lưu
-          </Button>
+        <div className="card-content">
+          <FormGroup label="Tiêu đề">
+            <InputGroup
+              style={{ width: "100%" }}
+              large
+              placeholder="Tiêu đề"
+              value={request.subject}
+              name="subject"
+              onChange={handleInputChange}
+            />
+          </FormGroup>
+          <FormGroup label="Nội dung">
+            <RichTextEditor
+              initialValue={request.content}
+              onChange={handleContentChange}
+            />
+          </FormGroup>
+          <Sw checked={request.canComment} onChange={handleCanCommentChange}>
+            Có thể bình luận
+          </Sw>
+          <Label>Tags</Label>
+          {tags && (
+            <TagSelect
+              value={tags}
+              onSelect={handleSelect}
+              onRemove={handleRemove}
+            />
+          )}
         </div>
       </div>
-      <hr />
-      <h3>Tiêu đề</h3>
-      <InputGroup
-        style={{ width: "100%" }}
-        large
-        placeholder="Tiêu đề"
-        value={request.subject}
-        name="subject"
-        onChange={handleInputChange}
-      />
-      <h3>Nội dung</h3>
-      <RichTextEditor
-        initialValue={request.content}
-        onChange={handleContentChange}
-      />
-      <h3>Thiết lập</h3>
-      <Sw checked={request.canComment} onChange={handleCanCommentChange}>
-        Có thể bình luận
-      </Sw>
-    </div>
+      <TagCreate />
+    </Layout2>
   );
 };

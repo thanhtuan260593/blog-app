@@ -1,0 +1,10 @@
+.navbar {
+    color: white;
+    background-color: $primary;
+    border-bottom: 4px solid $secondary;
+    .bp3-button .bp3-icon,
+    .bp3-button .bp3-icon-standard,
+    .bp3-button .bp3-icon-large {
+        color: white;
+    }
+}

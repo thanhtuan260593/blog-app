@@ -1,16 +1,21 @@
 import React, { useState } from "react";
 import { useHistory } from "react-router-dom";
 import RichTextEditor from "components/Editors/Editor";
-import { Button, Switch as Sw, InputGroup } from "@blueprintjs/core";
+import {
+  Button,
+  Switch as Sw,
+  InputGroup,
+  Icon,
+  FormGroup,
+  Label,
+} from "@blueprintjs/core";
 import { postAPI } from "resources/api/post";
-import { Switch } from "react-router-dom";
-import { TagSelect } from "components/Tag";
-import { CreatePostRequest, PostRestriction } from "resources/models/Post";
-import { Alert } from "components/Alert";
-import { Layout3_7 } from "layout/Layout3_7";
-import { TagCreate } from "components/TagCreate";
-import { TagProp } from "components/TagProp";
-import { MyQuillEditor } from "components/Editors/MyQuillEditor";
+import { TagSelect } from "components/Tag/TagSelect";
+import { CreatePostRequest, PostRestriction } from "resources/models/PostAPI";
+import { Alert } from "components/Commons/Alert";
+import { Layout2 } from "layout/Layout2";
+import { TagCreate } from "components/Tag/TagCreate";
+import { TagProps } from "resources/models/TagProps";
 
 const initialValue = [
   {
@@ -42,6 +47,7 @@ export const ComposePost = () => {
     postAPI
       .createPost(request)
       .then((u) => {
+        if (u == null) return Promise.reject("ERROR");
         history.push(`/update/${u.id}`);
       })
       .catch((e) => {
@@ -68,41 +74,53 @@ export const ComposePost = () => {
       canComment: !r.canComment,
     }));
   };
-  const handleTagsChange = (tags: TagProp[]) =>
+  const handleTagsChange = (tags: TagProps[]) =>
     setRequest((request) => ({
       ...request,
       tags: tags.map((tag) => tag.value),
     }));
 
   return (
-    <Layout3_7>
+    <Layout2>
       <div>
         <Alert isOpen={alert.isOpen} message={alert.message} />
-        <h2>Soạn bài viết</h2>
-        <Button intent="primary" onClick={handleSave}>
-          Lưu
-        </Button>
-        <h3>Tiêu đề</h3>
-        <InputGroup
-          style={{ width: "100%" }}
-          large
-          placeholder="Tiêu đề"
-          value={request.subject}
-          name="subject"
-          onChange={handleInputChange}
-        />
-        <h3>Nội dung</h3>
-
-        <MyQuillEditor onChange={handleContentChange} value={request.content} />
-
-        <h3>Thiết lập</h3>
-        <Sw checked={request.canComment} onChange={handleCanCommentChange}>
-          Có thể bình luận
-        </Sw>
-        <h3>Tag</h3>
-        <TagSelect onChange={handleTagsChange} />
+        <div className="card-header align-left">
+          <h2>Soạn bài viết</h2>
+          <div className="card-header-actions">
+            <Button
+              minimal
+              icon={<Icon icon="floppy-disk" />}
+              onClick={handleSave}
+            >
+              Lưu
+            </Button>
+          </div>
+        </div>
+        <div className="card-content">
+          <FormGroup label="Tiêu đề">
+            <InputGroup
+              style={{ width: "100%" }}
+              large
+              placeholder="Tiêu đề"
+              value={request.subject}
+              name="subject"
+              onChange={handleInputChange}
+            />
+          </FormGroup>
+          <FormGroup label="Nội dung">
+            <RichTextEditor
+              onChange={handleContentChange}
+              initialValue={JSON.stringify(initialValue)}
+            />
+          </FormGroup>
+          <Sw checked={request.canComment} onChange={handleCanCommentChange}>
+            Có thể bình luận
+          </Sw>
+          <Label>Tag</Label>
+          <TagSelect onChange={handleTagsChange} />
+        </div>
       </div>
       <TagCreate />
-    </Layout3_7>
+    </Layout2>
   );
 };

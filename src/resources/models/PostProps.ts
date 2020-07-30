@@ -1,9 +1,8 @@
-import { PostOverview } from "components/Post/Post";
-import { PostRestriction } from "../../resources/models/Post";
-import { TagProp } from "../TagProp";
+import { PostRestriction } from "resources/models/PostAPI";
+import { TagProps } from "resources/models/TagProps";
 
-export interface PostTagProp {
-  tag: TagProp;
+export interface PostTagProps {
+  tag: TagProps;
 }
 
 export interface PostOverviewProps {
@@ -25,7 +24,7 @@ export interface PostProps extends PostOverviewProps {
 }
 
 export interface PostListProps {
-  posts: PostOverviewProps[];
+  posts: PostProps[];
   showImage?: boolean;
   showTag?: boolean;
 }
