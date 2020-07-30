@@ -13,6 +13,7 @@ import { UpdatePost } from "views/UpdatePost";
 import { Slideshow } from "components/Slideshow/Slideshow";
 import useScreenSize, { ScreenSize } from "layout/useScreenSize";
 import { PostTagView } from "views/PostTag";
+import { SearchResultView } from "views/SearchResult";
 
 function App() {
   const size = useScreenSize();
@@ -28,6 +29,7 @@ function App() {
             <Route exact path="/create" component={ComposePost} />
             <Route exact path="/post/update/:id" component={UpdatePost} />
             <Route exact path="/post/:id" component={PostDetailView} />
+            <Route exact path="/search" component={SearchResultView} />
           </Switch>
         </section>
         <Footer />

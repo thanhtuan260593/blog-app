@@ -16,6 +16,7 @@ import { Alert } from "components/Commons/Alert";
 import { Layout2 } from "layout/Layout2";
 import { TagCreate } from "components/Tag/TagCreate";
 import { TagProps } from "resources/models/TagProps";
+import { routes } from "constants/routes";
 
 const initialValue = [
   {
@@ -48,7 +49,7 @@ export const ComposePost = () => {
       .createPost(request)
       .then((u) => {
         if (u == null) return Promise.reject("ERROR");
-        history.push(`/update/${u.id}`);
+        history.push(routes.postUpdate.getPath(u.id));
       })
       .catch((e) => {
         console.log("ERROR", e);
@@ -82,7 +83,7 @@ export const ComposePost = () => {
 
   return (
     <Layout2>
-      <div>
+      <div className="card">
         <Alert isOpen={alert.isOpen} message={alert.message} />
         <div className="card-header align-left">
           <h2>Soạn bài viết</h2>

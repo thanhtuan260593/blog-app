@@ -16,6 +16,7 @@ import { Alert } from "components/Commons/Alert";
 import { Layout2 } from "layout/Layout2";
 import { TagSelect } from "components//Tag/TagSelect";
 import { TagCreate } from "components/Tag/TagCreate";
+import { routes } from "constants/routes";
 
 type TParams = { id: string };
 export const UpdatePost = ({ match }: RouteComponentProps<TParams>) => {
@@ -46,8 +47,8 @@ export const UpdatePost = ({ match }: RouteComponentProps<TParams>) => {
     if (request == null || id == null) return;
     postAPI
       .updatePost(id, request)
-      .then((u) => {
-        history.push(`/update/${id}`);
+      .then(() => {
+        history.push(routes.postUpdate.getPath(id));
       })
       .catch((e) => {
         console.log("ERROR", e);
