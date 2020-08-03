@@ -12,7 +12,8 @@ import {
 import { Editor, Transforms, createEditor, Node } from "slate";
 import { withHistory } from "slate-history";
 import { Icon, IconName } from "@blueprintjs/core";
-import { Button, Toolbar } from "./components";
+import { Button, Toolbar } from "./Components/components";
+import { withImages, ImageElement } from "./Components/ImageElement";
 
 const HOTKEYS: { [id: string]: string } = {
   "mod+b": "bold",
@@ -27,7 +28,10 @@ interface RichTextViewerProps {
 }
 export const RichTextViewer = ({ initialValue }: RichTextViewerProps) => {
   const [value, setValue] = useState<Node[]>([]);
-  const editor = useMemo(() => withHistory(withReact(createEditor())), []);
+  const editor = useMemo(
+    () => withImages(withHistory(withReact(createEditor()))),
+    []
+  );
   const renderElement = useCallback((props) => <Element {...props} />, []);
   const renderLeaf = useCallback((props) => <Leaf {...props} />, []);
   useEffect(() => {
@@ -65,7 +69,10 @@ const RichTextEditor = ({ onChange, initialValue, clear }: RichTextEditor) => {
   const [value, setValue] = useState<Node[]>(JSON.parse(initialValue));
   const renderElement = useCallback((props) => <Element {...props} />, []);
   const renderLeaf = useCallback((props) => <Leaf {...props} />, []);
-  const editor = useMemo(() => withHistory(withReact(createEditor())), []);
+  const editor = useMemo(
+    () => withImages(withHistory(withReact(createEditor()))),
+    []
+  );
   const handleChange = (value: Node[]) => {
     setValue(value);
     if (value == null) return "[]";
@@ -154,6 +161,14 @@ const isMarkActive = (editor: ReactEditor, format: string) => {
 
 const Element = ({ attributes, children, element }: RenderElementProps) => {
   switch (element.type) {
+    case "image":
+      return (
+        <ImageElement
+          attributes={attributes}
+          children={children}
+          element={element}
+        />
+      );
     case "block-quote":
       return <blockquote {...attributes}>{children}</blockquote>;
     case "bulleted-list":
