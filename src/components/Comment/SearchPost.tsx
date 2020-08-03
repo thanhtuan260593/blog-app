@@ -1,8 +1,6 @@
-import React, { useState } from "react";
-import { InputGroup } from "@blueprintjs/core";
+import React from "react";
 import { TagSelect } from "components/Tag/TagSelect";
 import { TagOnEnterEvent } from "resources/models/TagProps";
-import { postAPI } from "resources/api/post";
 import { useHistory } from "react-router-dom";
 const queryString = require("query-string");
 export const SearchPost = () => {

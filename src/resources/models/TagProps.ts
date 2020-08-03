@@ -1,6 +1,8 @@
 export interface TagProps {
   value: string;
   isSystem?: boolean;
+  postCount?: number;
+  lastModifiedAt?: Date;
 }
 
 export interface TagOnEnterEvent {

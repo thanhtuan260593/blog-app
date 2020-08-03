@@ -14,6 +14,7 @@ import {
 import React, { useState } from "react";
 import { Link } from "react-router-dom";
 import useScreenSize, { ScreenSize } from "./useScreenSize";
+import { routes } from "constants/routes";
 
 interface MenuItemProps {
   icon: IconName;
@@ -24,7 +25,7 @@ const items: MenuItemProps[] = [
   { icon: "helper-management", text: "Admin", link: "/admin" },
   { icon: "home", text: "Tin tức", link: "/" },
   { icon: "document", text: "Tài liệu", link: "/documents" },
-  { icon: "add", text: "Soạn tin", link: "/create" },
+  { icon: "add", text: "Soạn tin", link: routes.postCreate.getPath() },
 ];
 
 export const NavMenu = () => {

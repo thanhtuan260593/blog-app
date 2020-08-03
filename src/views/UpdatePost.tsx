@@ -1,22 +1,19 @@
-import React, { useState, useEffect } from "react";
-import { useHistory, RouteComponentProps, Link } from "react-router-dom";
-import RichTextEditor from "components/Editors/Editor";
-import {
-  Button,
-  Switch as Sw,
-  InputGroup,
-  Spinner,
-  Icon,
-  FormGroup,
-  Label,
-} from "@blueprintjs/core";
+import React, { useState, useEffect, useCallback } from "react";
+import { useHistory, RouteComponentProps } from "react-router-dom";
+import { Button, Spinner, Icon } from "@blueprintjs/core";
 import { postAPI } from "resources/api/post";
-import { UpdatePostRequest } from "resources/models/PostAPI";
+import {
+  UpdatePostRequest,
+  PostContentRequest,
+  PostSettingRequest,
+} from "resources/models/PostAPI";
 import { Alert } from "components/Commons/Alert";
 import { Layout2 } from "layout/Layout2";
-import { TagSelect } from "components//Tag/TagSelect";
-import { TagCreate } from "components/Tag/TagCreate";
 import { routes } from "constants/routes";
+import {
+  PostSettingEditor,
+  PostContentEditor,
+} from "components/Post/PostEditor";
 
 type TParams = { id: string };
 export const UpdatePost = ({ match }: RouteComponentProps<TParams>) => {
@@ -48,35 +45,19 @@ export const UpdatePost = ({ match }: RouteComponentProps<TParams>) => {
     postAPI
       .updatePost(id, request)
       .then(() => {
-        history.push(routes.postUpdate.getPath(id));
+        viewDetail();
       })
       .catch((e) => {
-        console.log("ERROR", e);
         setAlert({ isOpen: true, message: e.message });
       });
   };
 
-  const handleContentChange = (value: string) => {
-    setRequest((r: UpdatePostRequest | undefined) => {
-      if (r == null) return r;
-      return { ...r, content: value };
-    });
+  const handleContentChange = (content: PostContentRequest) => {
+    setRequest((request) => (request ? { ...request, ...content } : request));
   };
-  const handleInputChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const { value, name } = event.target;
-    setRequest((r: UpdatePostRequest | undefined) => {
-      if (r == null) return r;
-      return { ...r, [name]: value };
-    });
-  };
-  const handleCanCommentChange = () => {
-    setRequest((r: UpdatePostRequest | undefined) => {
-      if (r == null) return r;
-      return {
-        ...r,
-        canComment: !r.canComment,
-      };
-    });
+
+  const handleSettingChange = (settings: PostSettingRequest) => {
+    setRequest((request) => (request ? { ...request, ...settings } : request));
   };
 
   const handleSelect = (tag: string) => {
@@ -98,57 +79,52 @@ export const UpdatePost = ({ match }: RouteComponentProps<TParams>) => {
     });
   };
 
-  if (request == null) {
+  const viewDetail = useCallback(() => {
+    id && history.push(routes.postDetail.getPath(id));
+  }, [id, history]);
+
+  if (request == null || tags == null) {
     return <Spinner />;
   }
 
   return (
     <Layout2>
-      <div>
+      <div className="card">
         <Alert isOpen={alert.isOpen} message={alert.message} />
         <div className="card-header align-left">
-          <h2>Cập nhật bài viết #{id}</h2>
-          <Link to={`/post/${id}`}>
-            <Button minimal intent="primary" icon="undo" />
-          </Link>
-          <Button
-            minimal
-            intent="primary"
-            icon={<Icon icon="floppy-disk" />}
-            onClick={handleSave}
-          />
+          <h2>Soạn bài viết</h2>
+          <div className="card-header-actions">
+            <Button
+              minimal
+              intent="primary"
+              icon="eye-open"
+              onClick={viewDetail}
+            />
+            <Button
+              minimal
+              intent="primary"
+              icon={<Icon icon="floppy-disk" />}
+              onClick={handleSave}
+            >
+              Lưu
+            </Button>
+          </div>
         </div>
         <div className="card-content">
-          <FormGroup label="Tiêu đề">
-            <InputGroup
-              style={{ width: "100%" }}
-              large
-              placeholder="Tiêu đề"
-              value={request.subject}
-              name="subject"
-              onChange={handleInputChange}
-            />
-          </FormGroup>
-          <FormGroup label="Nội dung">
-            <RichTextEditor
-              initialValue={request.content}
-              onChange={handleContentChange}
-            />
-          </FormGroup>
-          <Sw checked={request.canComment} onChange={handleCanCommentChange}>
-            Có thể bình luận
-          </Sw>
-          <Label>Tags</Label>
-          {tags && (
-            <TagSelect
-              value={tags}
-              onSelect={handleSelect}
-              onRemove={handleRemove}
-            />
-          )}
+          <PostContentEditor
+            content={request.content}
+            subject={request.subject}
+            onChange={handleContentChange}
+          />
         </div>
       </div>
-      <TagCreate />
+      <PostSettingEditor
+        tags={tags}
+        settings={request}
+        onSettingChange={handleSettingChange}
+        onTagSelect={handleSelect}
+        onTagRemove={handleRemove}
+      />
     </Layout2>
   );
 };

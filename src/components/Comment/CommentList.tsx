@@ -75,7 +75,6 @@ export const CommentList = ({
       .finally(() => setLoading(false));
   }, [forceLoad]);
 
-  console.log("comment length", comments.length);
   if (loading) return renderLoading();
   return (
     <div className="comments-container">

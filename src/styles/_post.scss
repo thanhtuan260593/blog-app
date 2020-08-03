@@ -1,9 +1,22 @@
 .post-container {
   padding: 0 0 2px 0;
+  .post-meta {
+    display: flex;
+    .post-creator {
+      margin-right: 4px;
+    }
+  }
   .post-meta,
   .post-meta > a {
     font-size: 14px;
     color: $metaColor;
+  }
+  .post-meta > .post-meta-extras {
+    flex: 1 1 auto;
+    text-align: right;
+    .bp3-button {
+      min-height: 20px;
+    }
   }
   .post-social {
     display: flex;
@@ -21,6 +34,9 @@
   }
   .post-item {
     padding: 10px 10px 5px 10px;
+    .tag-item {
+      padding: 0 6px;
+    }
   }
   .post-item:hover {
     background-color: $contentActiveColor;

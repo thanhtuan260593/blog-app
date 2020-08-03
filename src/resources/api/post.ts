@@ -1,6 +1,6 @@
 import { CreatePostRequest, UpdatePostRequest } from "resources/models/PostAPI";
 import { put, get, post, _delete } from "./helper";
-import { PostProps } from "resources/models/PostProps";
+import { PostProps, PostMetric } from "resources/models/PostProps";
 import { exceptions } from "./exceptions";
 const queryString = require("query-string");
 const createPost = async (req: CreatePostRequest) => {
@@ -32,6 +32,14 @@ const getPost = async (id: number) => {
   );
   if (post === undefined) return Promise.reject(exceptions.invalidFormat);
   return post;
+};
+
+const getPostMetric = async (id: number) => {
+  const metric = await get<PostMetric>(
+    `${process.env.REACT_APP_API_URL}/post/metric/${id}`
+  );
+  if (metric === undefined) return Promise.reject(exceptions.invalidFormat);
+  return metric;
 };
 
 const getPosts = async (
@@ -91,6 +99,7 @@ export const postAPI = {
   updatePost,
   deletePost,
   getPost,
+  getPostMetric,
   getPosts,
   getCount,
   attachTag,

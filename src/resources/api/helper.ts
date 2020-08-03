@@ -1,3 +1,11 @@
+export interface RequestError {
+  code: number;
+  message: string;
+}
+const getError = (code: number, message: string) => {
+  return { code, message } as RequestError;
+};
+
 export const request = async <T>(method: string, path: string, body: any) => {
   const headers = {
     "Content-Type": "application/json",
@@ -5,7 +13,7 @@ export const request = async <T>(method: string, path: string, body: any) => {
   var response = await fetch(path, { method, headers, body });
   if (response.status !== 200) {
     var text = await response.text();
-    throw new Error(text);
+    return Promise.reject(getError(response.status, text));
   }
   try {
     var res = (await response.json()) as T;

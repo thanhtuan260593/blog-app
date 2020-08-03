@@ -82,7 +82,7 @@ export const TagSelect = (props: TagSelectProp) => {
   };
 
   const handleEnter = (event: React.KeyboardEvent<HTMLElement>) => {
-    if (event.keyCode == 13) {
+    if (event.keyCode === 13) {
       props.onEnter &&
         props.onEnter({
           text: inputText,
@@ -94,7 +94,7 @@ export const TagSelect = (props: TagSelectProp) => {
 
   useEffect(() => {
     setInputText("");
-  }, []);
+  }, [setInputText]);
 
   return (
     <TagMultiSelect

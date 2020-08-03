@@ -1,8 +1,7 @@
-import { useState, SetStateAction, Dispatch } from "react";
+import { useState } from "react";
 import useConstant from "use-constant";
 import AwesomeDebouncePromise from "awesome-debounce-promise";
 import { useAsync } from "react-async-hook";
-import { TagProps } from "resources/models/TagProps";
 export function useDebouncedSearch<t>(
   searchFunction: (text?: string) => Promise<t>
 ) {

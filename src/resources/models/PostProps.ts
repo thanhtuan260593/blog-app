@@ -5,7 +5,12 @@ export interface PostTagProps {
   tag: TagProps;
 }
 
-export interface PostOverviewProps {
+export interface PostMetric {
+  commentCount: number;
+  viewCount: number;
+}
+
+export interface PostOverviewProps extends PostMetric {
   id: number;
   subject: string;
   overview: string;
@@ -14,6 +19,8 @@ export interface PostOverviewProps {
   modifiedAt?: string;
   imageURL?: string;
   tags?: string[];
+  commentCount: number;
+  viewCount: number;
 }
 
 export interface PostProps extends PostOverviewProps {

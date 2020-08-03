@@ -1,5 +1,6 @@
 import React from "react";
+import { PostByTags } from "./PostByTags";
 
 export const AnnouncePosts = () => {
-  return <div></div>;
+  return <PostByTags tags={["annouce"]} />;
 };

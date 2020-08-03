@@ -3,6 +3,8 @@ import { PostProps } from "resources/models/PostProps";
 import { postAPI } from "resources/api/post";
 import { Classes } from "@blueprintjs/core";
 import { PostMeta } from "components/Post/Post";
+import { routes } from "constants/routes";
+import { Link } from "react-router-dom";
 
 const LoadingSlideshowItem = () => {
   return (
@@ -20,10 +22,12 @@ const SlideshowItem = (props: PostProps) => {
     <div className="slide-item">
       <div>
         <div className="slide-item-image" style={{ background }}></div>
-        <div className="header">
-          {props.subject}
-          <PostMeta post={{ ...props, tags: [] }} minimal />
-        </div>
+        <Link to={routes.postDetail.getPath(props.id)}>
+          <div className="header">
+            {props.subject}
+            <PostMeta post={{ ...props, tags: [] }} minimal />
+          </div>
+        </Link>
       </div>
     </div>
   );

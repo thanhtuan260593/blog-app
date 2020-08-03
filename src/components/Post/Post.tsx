@@ -41,7 +41,11 @@ export const PostHeader = ({ post }: { post: PostProps }) => {
     </Link>
   );
 };
-export const PostMeta = (props: { post: PostProps; minimal?: boolean }) => {
+export const PostMeta = (props: {
+  post: PostProps;
+  minimal?: boolean;
+  extras?: [JSX.Element];
+}) => {
   if (props.post === undefined)
     return (
       <div
@@ -52,17 +56,17 @@ export const PostMeta = (props: { post: PostProps; minimal?: boolean }) => {
   return (
     <div className="post-meta">
       <Avatar
+        className="post-creator"
         name={props.post.createdBy}
         size="20"
         round
         textSizeRatio={1.5}
         textMarginRatio={0.1}
-      />{" "}
+      />
       <i>
-        <strong>
-          {props.minimal ? "" : "Đăng bởi"} {props.post.createdBy}{" "}
-        </strong>{" "}
-        - {props.minimal ? "" : "Vào lúc"}{" "}
+        {props.minimal ? "" : "Đăng bởi"}{" "}
+        <strong>{props.post.createdBy} </strong> -{" "}
+        {props.minimal ? "" : "Vào lúc"}{" "}
         {new Date(props.post.createdAt).toLocaleDateString("vi-VN")}
       </i>{" "}
       {props.post.tags &&
@@ -71,23 +75,25 @@ export const PostMeta = (props: { post: PostProps; minimal?: boolean }) => {
             {u}
           </Tag>
         ))}
+      {props.extras && <div className="post-meta-extras">{props.extras}</div>}
     </div>
   );
 };
 
-const PostSocial = ({ post }: { post: PostProps }) => {
+export const PostSocial = ({ post }: { post: PostProps }) => {
   return (
     <div style={{ display: "flex" }}>
       <div className="post-social" style={{ flexGrow: 1 }}>
         <div className="post-social-item">
-          <Icon icon="comment" color={Colors.GRAY5} /> <b>14</b>
+          <Icon icon="comment" color={Colors.GRAY5} />{" "}
+          <b>{post.commentCount}</b>
         </div>
         <div className="post-social-item">
-          <Icon icon="eye-open" color={Colors.GRAY5} /> <b>2122</b>
+          <Icon icon="eye-open" color={Colors.GRAY5} /> <b>{post.viewCount}</b>
         </div>
-        <div className="post-social-item">
+        {/* <div className="post-social-item">
           <Icon icon="heart" color={Colors.GRAY5} /> <b>1</b>
-        </div>
+        </div> */}
       </div>
     </div>
   );
@@ -105,7 +111,6 @@ export const PostOverview = ({ post }: { post: PostProps }) => {
   return (
     <>
       <PostMeta post={post} minimal />
-
       <PostHeader post={post} />
       {post && post.imageURL && (
         <img src={post.imageURL} alt={post.subject} style={{ width: "100%" }} />
@@ -115,7 +120,12 @@ export const PostOverview = ({ post }: { post: PostProps }) => {
   );
 };
 
-export const PostDetail = ({ post }: { post: PostProps }) => {
+interface PostDetailProps {
+  post: PostProps;
+  reloadMetric: () => void;
+}
+
+export const PostDetail = ({ post, reloadMetric }: PostDetailProps) => {
   const [forceLoad, setForceLoad] = useState<() => Promise<CommentProps[]>>();
   const loadComments = useCallback(
     (pageIndex: number, pageRows: number) => {
@@ -137,6 +147,7 @@ export const PostDetail = ({ post }: { post: PostProps }) => {
   );
   const loadLastComments = () => {
     if (!post) return;
+    reloadMetric();
     setForceLoad(() => () => commentAPI.getPostComments(post.id, 0, 10));
   };
 

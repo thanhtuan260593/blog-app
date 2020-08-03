@@ -1,39 +1,56 @@
-import React from "react";
+import React, { Suspense, useState } from "react";
 import { Footer } from "layout/Footer";
 import { Header } from "layout/Header";
-import { Home } from "views/Home";
-import { BrowserRouter, Switch, Route } from "react-router-dom";
+import { Switch, Route } from "react-router-dom";
 import "../node_modules/normalize.css/normalize.css";
 import "../node_modules/@blueprintjs/icons/lib/css/blueprint-icons.css";
 import "../node_modules/@blueprintjs/core/lib/css/blueprint.css";
 import "styles/App.scss";
-import { ComposePost } from "views/ComposePost";
-import { PostDetailView } from "views/PostDetail";
-import { UpdatePost } from "views/UpdatePost";
 import { Slideshow } from "components/Slideshow/Slideshow";
 import useScreenSize, { ScreenSize } from "layout/useScreenSize";
-import { PostTagView } from "views/PostTag";
-import { SearchResultView } from "views/SearchResult";
+import { routes } from "constants/routes";
+import {
+  Breadcrumbs,
+  BreadscrumbContext,
+} from "components/Commons/Breadscrumbs";
+import { IBreadcrumbProps } from "@blueprintjs/core";
 
+const renderLoader = () => <p>Loading</p>;
 function App() {
+  const [breadscrumbs, setBreadscrumbs] = useState<IBreadcrumbProps[]>([]);
   const size = useScreenSize();
   return (
     <div className="App">
-      <BrowserRouter>
-        <Header />
-        <section className="app-content">
-          {size === ScreenSize.LARGE && <Slideshow />}
-          <Switch>
-            <Route exact path="/" component={Home} />
-            <Route exact path="/post/tags" component={PostTagView} />
-            <Route exact path="/create" component={ComposePost} />
-            <Route exact path="/post/update/:id" component={UpdatePost} />
-            <Route exact path="/post/:id" component={PostDetailView} />
-            <Route exact path="/search" component={SearchResultView} />
-          </Switch>
-        </section>
-        <Footer />
-      </BrowserRouter>
+      <Header />
+      <section className="app-content">
+        {size === ScreenSize.LARGE && <Slideshow />}
+        <Suspense fallback={renderLoader}>
+          <Route path="/">
+            <BreadscrumbContext.Provider
+              value={{
+                breadscrumbs,
+                setBreadscrumbs,
+              }}
+            >
+              <Breadcrumbs />
+              <Switch>
+                {Object.keys(routes).map((key) => {
+                  const route = routes[key];
+                  return (
+                    <Route
+                      key={route.path}
+                      exact={route.exact}
+                      path={route.path}
+                      component={route.component}
+                    />
+                  );
+                })}
+              </Switch>
+            </BreadscrumbContext.Provider>
+          </Route>
+        </Suspense>
+      </section>
+      <Footer />
     </div>
   );
 }

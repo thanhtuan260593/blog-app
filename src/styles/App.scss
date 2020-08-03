@@ -7,6 +7,7 @@
 @import "input";
 @import "comment";
 @import "navbar";
+@import "breadscrumbs";
 .App-logo {
   height: 40vmin;
   pointer-events: none;
@@ -17,7 +18,7 @@
 }
 
 .bp3-tag {
-  margin: 1px;
+  margin: 0 1px;
 }
 .bp3-navbar-heading {
   font-weight: 800;
@@ -30,6 +31,7 @@
 }
 .app-content {
   margin-top: 60px;
+  min-height: 550px;
 }
 
 .inverse {

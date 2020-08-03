@@ -5,9 +5,11 @@ import { Spinner, Button, Classes } from "@blueprintjs/core";
 import { postAPI } from "resources/api/post";
 
 interface PostByTagsProp {
-  tags?: string[];
+  tags: string[];
   showImage?: boolean;
   showTag?: boolean;
+  filter?: (posts: PostProps[]) => PostProps[];
+  limit?: number;
 }
 
 const pageRows = 10;
@@ -23,10 +25,16 @@ export const PostByTagsLoading = () => {
 
 export const PostByTags = (props: PostByTagsProp) => {
   const [posts, setPosts] = useState<PostProps[]>();
+  const [filteredPosts, setFilteredPosts] = useState<PostProps[]>();
   const [total, setTotal] = useState<number>();
-  // const [pageIndex, setPageIndex] = useState<number>();
-  const [loading, setLoading] = useState<boolean>(true);
-
+  const [loading, setLoading] = useState<boolean>();
+  const filter = useCallback(
+    (posts: PostProps[]) => {
+      const filteredPosts = props.filter ? props.filter(posts) : posts;
+      setFilteredPosts(filteredPosts);
+    },
+    [props]
+  );
   const loadMore = useCallback(() => {
     setLoading(true);
     let index = 0;
@@ -43,7 +51,10 @@ export const PostByTags = (props: PostByTagsProp) => {
             (post) =>
               newPosts.filter((newPost) => newPost.id === post.id).length === 0
           ) ?? [];
-        setPosts([...oldPosts, ...newPosts]);
+        newPosts = [...oldPosts, ...newPosts];
+
+        setPosts(newPosts);
+        filter(newPosts);
         const total = await postAPI.getCount(props.tags);
         setTotal(total);
       } finally {
@@ -51,13 +62,21 @@ export const PostByTags = (props: PostByTagsProp) => {
       }
     };
     loadAsync();
-  }, [props.tags, posts]);
+  }, [props.tags, posts, filter]);
+
   useEffect(() => {
     if (props.tags === undefined) return;
-    postAPI.getPosts(0, pageRows, props.tags).then(setPosts);
+    postAPI.getPosts(0, pageRows, props.tags).then((posts) => {
+      setPosts(posts);
+      filter(posts);
+    });
     postAPI.getCount(props.tags).then(setTotal);
-  }, [props.tags]);
-  if (posts === undefined || total === undefined) {
+  }, [props.tags, filter]);
+  if (
+    filteredPosts === undefined ||
+    posts === undefined ||
+    total === undefined
+  ) {
     return <PostByTagsLoading />;
   }
   return (
@@ -65,7 +84,7 @@ export const PostByTags = (props: PostByTagsProp) => {
       <PostList
         showImage={props.showImage}
         showTag={props.showTag}
-        posts={posts}
+        posts={filteredPosts}
       />
 
       {posts.length < total && (

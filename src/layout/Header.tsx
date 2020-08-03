@@ -1,10 +1,5 @@
 import * as React from "react";
-import {
-  Navbar,
-  NavbarDivider,
-  NavbarGroup,
-  InputGroup,
-} from "@blueprintjs/core";
+import { Navbar, NavbarDivider, NavbarGroup } from "@blueprintjs/core";
 import { UserDropdown } from "./UserDropdown";
 import { NavMenu } from "./NavMenu";
 import { SearchPost } from "components/Comment/SearchPost";

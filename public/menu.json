@@ -22,6 +22,7 @@
   {
     "text": "Phòng ban",
     "icon": "office",
+    "tags": ["cntt", "finance"],
     "children": [
       {
         "text": "CNTT",
