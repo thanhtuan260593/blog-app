@@ -1,26 +1,34 @@
-import React, { useState, useEffect } from "react";
-import { Intent, Alert as A } from "@blueprintjs/core";
+import React from "react";
+import {
+  Alert as A,
+  AlertDescription,
+  AlertIcon,
+  AlertTitle,
+  Box,
+  CloseButton,
+} from "@chakra-ui/react";
 
-export const Alert = (props: { isOpen: boolean; message: string }) => {
-  const [isOpen, setOpen] = useState(props.isOpen);
-  const [message, setMessage] = useState(props.message);
-  useEffect(() => {
-    setOpen(props.isOpen);
-    setMessage(props.message);
-  }, [props]);
-  const close = () => {
-    setOpen(false);
-  };
+interface Props {
+  title?: string;
+  children: React.ReactNode;
+  onClose?: () => void;
+}
+export const Alert = (props: Props) => {
   return (
-    <A
-      cancelButtonText="Cancel"
-      icon="error"
-      intent={Intent.DANGER}
-      isOpen={isOpen}
-      onCancel={close}
-      onClose={close}
-    >
-      <p>{message}</p>
+    <A status="error" rounded="md">
+      <AlertIcon />
+      <Box flex={1}>
+        <AlertTitle mr={2}>{props.title ?? "Alert"}</AlertTitle>
+        <AlertDescription>{props.children}</AlertDescription>
+        {props.onClose && (
+          <CloseButton
+            position="absolute"
+            right="8px"
+            top="8px"
+            onClick={props.onClose}
+          />
+        )}
+      </Box>
     </A>
   );
 };

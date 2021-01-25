@@ -1,5 +1,5 @@
 import React from "react";
-import { Tag, Divider } from "@blueprintjs/core";
+import { Tag, Divider } from "@chakra-ui/react";
 const tags = [
   "thông báo",
   "tin tức",

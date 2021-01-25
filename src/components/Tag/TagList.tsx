@@ -1,30 +1,30 @@
 import React, { useState, useCallback } from "react";
 import {
-  Tag,
-  HTMLSelect,
-  Button,
-  IOptionProps,
-  HTMLTable,
-  ControlGroup,
-  FormGroup,
-} from "@blueprintjs/core";
-import { TagProps } from "resources/models/TagProps";
+  Box,
+  FormControl,
+  Select,
+  VStack,
+  Progress,
+  Flex,
+  HStack,
+} from "@chakra-ui/react";
+import { Card } from "components/layout/Card";
+import { OrderDirSelect } from "components/commons/filters/OrderDirSelect";
+import { Tag as TagModel } from "resources/models/tag";
 
 interface TagListProps {
-  tags: TagProps[];
-  onItemClick?: (tag?: TagProps) => void;
+  tags: TagModel[];
+  onItemClick?: (tag?: TagModel) => void;
 }
 
 interface OrderSelectProps {
-  onChange: (
-    direction: "sort-asc" | "sort-desc",
-    orderBy: TagOrderByOption
-  ) => void;
+  onChange: (direction: 0 | 1, orderBy: TagOrderByOption) => void;
 }
 
 export type TagOrderByEnum = "value" | "postCount" | "lastModifiedPost";
-export interface TagOrderByOption extends IOptionProps {
+export interface TagOrderByOption {
   value: TagOrderByEnum;
+  label: string;
 }
 const orderOptions: TagOrderByOption[] = [
   {
@@ -36,77 +36,75 @@ const orderOptions: TagOrderByOption[] = [
 ];
 
 export const OrderSelect = ({ onChange }: OrderSelectProps) => {
-  const [direction, setDirection] = useState<"sort-asc" | "sort-desc">(
-    "sort-asc"
-  );
+  const [orderDirection, setOrderDirection] = useState<0 | 1>(0);
   const [orderBy, setOrderBy] = useState<TagOrderByOption>(orderOptions[0]);
-
-  const onDirectionChange = useCallback(() => {
-    const newDirection = direction === "sort-asc" ? "sort-desc" : "sort-asc";
-    setDirection(newDirection);
-    onChange(newDirection, orderBy);
-  }, [direction, orderBy, onChange]);
 
   const onOrderByChange = useCallback(
     (event: React.ChangeEvent<HTMLSelectElement>) => {
       var filter = orderOptions.filter((o) => o.value === event.target.value);
       if (filter.length === 1) {
         setOrderBy(filter[0]);
-        onChange(direction, filter[0]);
+        onChange(orderDirection, filter[0]);
       }
     },
-    [direction, onChange]
+    [orderDirection, onChange]
+  );
+  const handleDirectionChange = React.useCallback(
+    (direction: 0 | 1) => {
+      setOrderDirection(direction);
+      onChange(direction, orderBy);
+    },
+    [onChange, orderBy]
   );
 
   return (
-    <FormGroup>
-      <ControlGroup fill>
-        <HTMLSelect
-          value={orderBy.value}
-          options={orderOptions}
-          onChange={onOrderByChange}
-        ></HTMLSelect>
-        <Button
-          style={{ flex: "0 0 auto" }}
-          icon={direction}
-          onClick={onDirectionChange}
-        />
-      </ControlGroup>
-    </FormGroup>
+    <HStack>
+      <FormControl>
+        <Select onChange={onOrderByChange} value={orderBy.value}>
+          {orderOptions.map((op) => (
+            <option value={op.value}>{op.label}</option>
+          ))}
+        </Select>
+      </FormControl>
+      <OrderDirSelect value={orderDirection} onChange={handleDirectionChange} />
+    </HStack>
   );
 };
 
 export const TagList = ({ tags, onItemClick }: TagListProps) => {
-  const [selectedTag, setSelectedTag] = useState<string>();
+  const max = React.useMemo(() => {
+    let max = 1;
+    for (let i = 0; i < tags.length; i++) {
+      const tag = tags[i];
+      if (tag.postCount == null) continue;
+      if (tag.postCount > max) max = tag.postCount;
+    }
+    return max;
+  }, [tags]);
   return (
-    <HTMLTable condensed striped>
-      <thead>
-        <tr>
-          <th>Tag</th>
-          <th>Số bài viết</th>
-        </tr>
-      </thead>
-      <tbody>
-        {tags.map((tag, index) => (
-          <tr key={index}>
-            <td>
-              <Tag
-                intent={tag.value === selectedTag ? "danger" : "primary"}
-                interactive
-                onClick={() => {
-                  const nextSelectedTag =
-                    tag.value === selectedTag ? undefined : tag;
-                  onItemClick && onItemClick(nextSelectedTag);
-                  setSelectedTag(nextSelectedTag?.value);
-                }}
-              >
-                {tag.value}
-              </Tag>
-            </td>
-            <td>{tag.postCount ?? 0}</td>
-          </tr>
-        ))}
-      </tbody>
-    </HTMLTable>
+    <VStack align="stretch">
+      {tags.map((tag) => (
+        <Card key={tag.value}>
+          <Box
+            px={4}
+            py={2}
+            cursor="pointer"
+            onClick={() => onItemClick && onItemClick(tag)}
+          >
+            <Flex align="center">
+              <Box fontWeight="bold" flex={1} isTruncated>
+                {tag.label}
+              </Box>
+              <Progress
+                flex={3}
+                value={((tag.postCount ?? 0) * 100) / max}
+                size="xs"
+                colorScheme="blue"
+              />
+            </Flex>
+          </Box>
+        </Card>
+      ))}
+    </VStack>
   );
 };

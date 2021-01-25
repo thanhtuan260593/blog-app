@@ -5,29 +5,42 @@ export interface RequestError {
 const getError = (code: number, message: string) => {
   return { code, message } as RequestError;
 };
-
-export const request = async <T>(method: string, path: string, body: any) => {
-  const headers = {
+const baseAPI = process.env.REACT_APP_API_URL;
+export const request = async <T>(
+  method: string,
+  path: string,
+  body: any,
+  token?: string
+) => {
+  const defaultHeaders = {
     "Content-Type": "application/json",
   };
-  var response = await fetch(path, { method, headers, body });
+  const headers =
+    token == null
+      ? defaultHeaders
+      : {
+          ...defaultHeaders,
+          Authorization: "Bearer " + token,
+        };
+  var response = await fetch(baseAPI + path, { method, headers, body });
+  const text = await response.text();
   if (response.status !== 200) {
-    var text = await response.text();
     return Promise.reject(getError(response.status, text));
   }
   try {
-    var res = (await response.json()) as T;
-  } catch {
-    return undefined;
+    if (text == null || text.length === 0) return {} as T;
+    const res = JSON.parse(text) as T;
+    return res;
+  } catch (e) {
+    return Promise.reject(getError(-1, "invalid-format"));
   }
-  return res;
 };
 
 export const get = async <T>(path: string) => request<T>("GET", path, null);
-export const post = async <T>(path: string, body?: string) =>
-  request<T>("POST", path, body);
-export const _delete = async <T>(path: string, body?: string) =>
+export const post = async <T>(path: string, body?: string, token?: string) =>
+  request<T>("POST", path, body, token);
+export const _delete = async <T>(path: string, body?: string, token?: string) =>
   request<T>("DELETE", path, null);
-export const put = async <T>(path: string, body?: string) => {
-  return await request<T>("PUT", path, body);
+export const put = async <T>(path: string, body?: string, token?: string) => {
+  return await request<T>("PUT", path, body, token);
 };

@@ -3,11 +3,10 @@ import useConstant from "use-constant";
 import AwesomeDebouncePromise from "awesome-debounce-promise";
 import { useAsync } from "react-async-hook";
 export function useDebouncedSearch<t>(
-  searchFunction: (text?: string) => Promise<t>
+  searchFunction: (text?: string) => Promise<t[]>
 ) {
   // Handle the input text state
   const [inputText, setInputText] = useState("");
-
   // Debounce the original search async function
   const debouncedSearchFunction = useConstant(() =>
     AwesomeDebouncePromise(searchFunction, 300)
@@ -18,9 +17,9 @@ export function useDebouncedSearch<t>(
   // fire a new request on each keystroke
   const searchResults = useAsync(async () => {
     if (inputText == null) {
-      return [];
+      return [] as t[];
     } else {
-      return debouncedSearchFunction(inputText);
+      return await debouncedSearchFunction(inputText);
     }
   }, [debouncedSearchFunction, inputText]);
 

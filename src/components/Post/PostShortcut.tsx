@@ -1,218 +1,237 @@
-import React, { useState, useEffect, useMemo } from "react";
+import React, { useState, useMemo } from "react";
 import {
-  IconName,
   Icon,
   InputGroup,
-  Classes,
-  Drawer,
-  Button,
-  Position,
-} from "@blueprintjs/core";
-import { useLocation, useHistory } from "react-router-dom";
-const queryString = require("query-string");
-var classNames = require("classnames");
+  InputLeftElement,
+  Input,
+  Box,
+  Flex,
+  VStack,
+  HStack,
+} from "@chakra-ui/react";
+import {
+  useLocation,
+  useHistory,
+  matchPath,
+  generatePath,
+} from "react-router-dom";
+import {
+  MdSearch,
+  MdHome,
+  MdNewReleases,
+  MdExpandMore,
+  MdExpandLess,
+  MdKeyboardArrowRight,
+} from "react-icons/md";
+import { NewPostButton } from "components/post/NewPostButton";
+import { IconType } from "react-icons";
+import { routes } from "constants/routes";
+import { Tags } from "components/tag/Tags";
+import { useReactOidc } from "@axa-fr/react-oidc-context";
+import { TagContext } from "components/tag/TagProvider";
+interface MenuItem {
+  text: string;
+  icon?: IconType;
+  tag?: string;
+  href?: string;
+  children?: MenuItem[];
+  onChildMouseEnter?: () => void;
+  onChildMouseLeave?: () => void;
+}
+const menuData: MenuItem[] = [
+  {
+    text: "Home",
+    icon: MdHome,
+    href: "/",
+  },
+  {
+    text: "tuannt",
+    icon: MdNewReleases,
+    href: "/u/tuannt",
+  },
+];
+
 interface MenuItemProps {
   text: string;
-  icon?: IconName;
-  tags?: string[];
-  children?: MenuItemProps[];
+  icon?: IconType;
+  tag?: string;
+  href?: string;
   level: number;
+  children?: MenuItem[];
   onChildMouseEnter?: () => void;
   onChildMouseLeave?: () => void;
 }
 interface MenuProps {
   level: number;
-  items?: MenuItemProps[];
+  items?: MenuItem[];
   onChildMouseEnter?: () => void;
   onChildMouseLeave?: () => void;
 }
 
+const renderMenuItems = (props: MenuProps) =>
+  props.items?.map((u) => (
+    <MenuItemComponent
+      key={u.text}
+      text={u.text}
+      icon={u.icon}
+      tag={u.tag}
+      href={u.href}
+      children={u.children}
+      level={props.level}
+      onChildMouseEnter={() =>
+        props.onChildMouseEnter && props.onChildMouseEnter()
+      }
+      onChildMouseLeave={() =>
+        props.onChildMouseLeave && props.onChildMouseLeave()
+      }
+    />
+  )) ?? <></>;
+
 const Menu = (props: MenuProps) => {
   if (props.items == null) return <div></div>;
   return (
-    <div className="menu">
-      {props.items.map((u) => (
-        <MenuItem
-          key={u.text}
-          text={u.text}
-          icon={u.icon}
-          tags={u.tags}
-          children={u.children}
-          level={props.level}
-          onChildMouseEnter={() =>
-            props.onChildMouseEnter && props.onChildMouseEnter()
-          }
-          onChildMouseLeave={() =>
-            props.onChildMouseLeave && props.onChildMouseLeave()
-          }
-        />
-      ))}
-    </div>
+    <VStack spacing={0} align="stretch">
+      {renderMenuItems(props)}
+    </VStack>
   );
 };
 
-const MenuItem = (props: MenuItemProps) => {
+const MenuItemComponent = (props: MenuItemProps) => {
   const [hover, setHover] = useState<boolean>();
-  const [childHover, setChildHover] = useState<boolean>();
   const [showChildren, setShowChildren] = useState<boolean>();
   const history = useHistory();
   const location = useLocation();
   const link = useMemo(() => {
-    return queryString.stringifyUrl({
-      url: "/post/tags",
-      query: { tags: props.tags },
-    });
-  }, [props.tags]);
+    if (props.href) return props.href;
+    if (props.tag) return generatePath(routes.tag.path, { tag: props.tag });
+    return undefined;
+  }, [props]);
   const selected = useMemo(() => {
-    const parsed: { tags: string[] | string } = queryString.parse(
-      location.search
+    const match = matchPath<{ tag: string }>(
+      location.pathname,
+      routes.tag.path
     );
-
-    const tags = typeof parsed.tags == "string" ? [parsed.tags] : parsed.tags;
-    if (tags == null) return false;
-    if (props.tags == null) return false;
-    if (props.tags.length === 0 && tags.length === 0) return true;
-    if (props.tags.length === 0) return false;
-    return props.tags.reduce((pre, cur) => {
-      if (!pre) return pre;
-      return tags.filter((tag) => tag === cur).length > 0;
-    }, true);
-  }, [location, props.tags]);
+    if (match == null) return false;
+    return match.params.tag === props.tag;
+  }, [location, props.tag]);
   return (
-    <div
-      className={classNames("menu-item", {
-        select: selected ?? false,
-        hover: hover && !childHover,
-      })}
-      onMouseEnter={() => {
-        setHover(true);
-        props.onChildMouseEnter && props.onChildMouseEnter();
-      }}
-      onMouseLeave={() => {
-        setHover(false);
-        props.onChildMouseLeave && props.onChildMouseLeave();
-      }}
-      onClick={(event) => {
-        event.stopPropagation();
-        history.push(link);
-      }}
-    >
-      <div
-        className="menu-item-content"
-        style={{ paddingLeft: props.level * 10 + "px" }}
+    <>
+      <Box
+        py={2}
+        cursor="pointer"
+        bgColor={selected ? "gray.100" : undefined}
+        onMouseEnter={() => {
+          setHover(true);
+          props.onChildMouseEnter && props.onChildMouseEnter();
+        }}
+        onMouseLeave={() => {
+          setHover(false);
+          props.onChildMouseLeave && props.onChildMouseLeave();
+        }}
+        onClick={(event) => {
+          event.stopPropagation();
+          if (link == null) {
+            setShowChildren((expand) => !expand);
+            return;
+          }
+          history.push(link);
+        }}
       >
-        <div>
-          {props.icon && <Icon className="icon" icon={props.icon} />}
-          {props.text}
-        </div>
-        <div className="right">
-          {props.children && props.children.length > 0 && !showChildren && (
-            <Icon
-              className="icon"
-              icon="arrow-right"
-              onClick={(event) => {
-                event.stopPropagation();
-                setShowChildren(true);
-              }}
-            />
-          )}
-          {props.children && props.children.length > 0 && showChildren && (
-            <Icon
-              className="icon"
-              icon="arrow-down"
-              onClick={(event) => {
-                event.stopPropagation();
-                setShowChildren(false);
-              }}
-            />
-          )}
-        </div>
-      </div>
-      {showChildren && (
-        <Menu
-          items={props.children}
-          level={props.level + 1}
-          onChildMouseEnter={() => setChildHover(true)}
-          onChildMouseLeave={() => setChildHover(false)}
-        />
-      )}
-    </div>
+        <Flex
+          pl={4 + props.level * 6}
+          pr={2}
+          alignItems="baseline"
+          color={hover ? "blue.500" : undefined}
+        >
+          <HStack flex={1}>
+            <Icon as={props.icon ?? MdKeyboardArrowRight} />
+            <Box>{props.text}</Box>
+          </HStack>
+          <Box>
+            {props.children && props.children.length > 0 && !showChildren && (
+              <Icon as={MdExpandMore} />
+            )}
+            {props.children && props.children.length > 0 && showChildren && (
+              <Icon as={MdExpandLess} />
+            )}
+          </Box>
+        </Flex>
+        {showChildren && (
+          <Box pt={3}>
+            <Menu items={props.children} level={props.level + 1} />
+          </Box>
+        )}
+      </Box>
+    </>
   );
 };
 
-const filterItems = (items: MenuItemProps[], words: string[]) => {
+const filterItems = (items: MenuItem[], words: string[]) => {
   var filtered = items.reduce((pre, item) => {
     if (item.children == null) {
-      if (item.tags == null) return pre;
-      if (item.tags.length === 0) return [...pre, item];
-      const valid =
-        words.filter(
-          (word) =>
-            item.tags != null &&
-            item.tags.filter((tag) => tag.match(word)).length > 0
-        ).length > 0;
+      if (item.tag == null) return [...pre, item];
+      const valid = words.filter((word) => item.tag?.includes(word)).length > 0;
       if (valid) return [...pre, item];
       return pre;
     }
 
-    const children = filterItems(item.children, words) as MenuItemProps[];
+    const children = filterItems(item.children, words) as MenuItem[];
     if (children.length === 0) return pre;
     return [...pre, { ...item, children }];
-  }, [] as MenuItemProps[]);
-  console.log(items, filtered);
+  }, [] as MenuItem[]);
   return filtered;
 };
 
 export const PostShortcut = () => {
-  const [menu, setMenu] = useState<MenuItemProps[]>();
-  const [searchedMenu, setSearchedMenu] = useState<MenuItemProps[]>();
+  const [query, setQuery] = useState<string>("");
+  const [searchedMenu, setSearchedMenu] = useState<MenuItem[]>(menuData);
+  const { tags: sourceTags } = React.useContext(TagContext);
+  const { oidcUser } = useReactOidc();
+  const tags = useMemo(() => {
+    return sourceTags
+      ?.filter(
+        (tag) =>
+          tag.postCount &&
+          tag.postCount > 0 &&
+          tag.value.toLowerCase().includes(query.toLocaleLowerCase())
+      )
+      .slice(0, 9);
+  }, [sourceTags, query]);
 
+  React.useEffect(() => {
+    const words = query.trim().split(" ");
+    const items = filterItems(menuData, words);
+    setSearchedMenu(items);
+  }, [query]);
   const handleSearch = (event: React.ChangeEvent<HTMLInputElement>) => {
     const search = event.target.value;
-    if (menu == null) return menu;
-    const words = search.trim().split(" ");
-
-    const items = filterItems(menu, words);
-    setSearchedMenu(items);
+    setQuery(search);
   };
 
-  useEffect(() => {
-    fetch(`${process.env.PUBLIC_URL}/menu.json`)
-      .then((response) => response.json())
-      .then((json) => {
-        setMenu(json as MenuItemProps[]);
-        setSearchedMenu(json as MenuItemProps[]);
-      });
-  }, []);
   return (
-    <div className="card inverse">
-      <div className="card-header" style={{ margin: "10px" }}>
-        <InputGroup fill leftIcon="search" onChange={handleSearch} />
-      </div>
-      <Menu items={searchedMenu} level={1} />
-    </div>
-  );
-};
-
-export const SmallPostShortcut = () => {
-  const [open, setOpen] = useState(false);
-
-  return (
-    <>
-      <Button icon="menu" onClick={() => setOpen((open) => !open)} />
-      <Drawer
-        icon="menu"
-        onClose={() => setOpen(false)}
-        title="Menu"
-        isOpen={open}
-        position={Position.LEFT}
-      >
-        <div className={`${Classes.DRAWER_BODY} inverse`}>
-          <div className={Classes.DIALOG_BODY}>
-            <PostShortcut />
-          </div>
-        </div>
-      </Drawer>
-    </>
+    <Box>
+      {oidcUser && (
+        <Box mx={4} mb={4}>
+          <NewPostButton w="100%" />
+        </Box>
+      )}
+      <Box mx={4} mb={4}>
+        <InputGroup>
+          <InputLeftElement>
+            <Icon as={MdSearch} />
+          </InputLeftElement>
+          <Input bgColor="gray.50" overflow="hidden" onChange={handleSearch} />
+        </InputGroup>
+      </Box>
+      <Menu items={searchedMenu} level={0} />
+      {tags && (
+        <Box pl={4} pt={4}>
+          <strong>Tags</strong>
+          <Box pt={2}>
+            <Tags showNumber tags={tags} />
+          </Box>
+        </Box>
+      )}
+    </Box>
   );
 };

@@ -1,16 +1,48 @@
-import { get, put } from "./helper";
-import { TagProps } from "resources/models/TagProps";
+import { get, post, put, _delete } from "./helper";
+import { Tag } from "resources/models/tag";
+import queryString from "query-string";
+export const batchTags = async (tags: string[]) => {
+  const query = { tags };
+  const url = queryString.stringifyUrl({
+    url: `/tag/batch`,
+    query,
+  });
+  return await get<Tag[]>(url);
+};
 
-const getTags = async (search: string) => {
-  const res = await get<TagProps[]>(
-    `${process.env.REACT_APP_API_URL}/tag?search=${search}`
-  );
-  if (res === undefined) return [] as TagProps[];
+export const getTags = async (
+  limit: number,
+  offset: number,
+  search?: string
+) => {
+  const query = { limit, offset, search };
+  const url = queryString.stringifyUrl({
+    url: `/tag`,
+    query,
+  });
+  const res = await get<Tag[]>(url);
+
   return res;
 };
 
-const putTag = async (tag: string) => {
-  return await put<TagProps>(`${process.env.REACT_APP_API_URL}/tag?tag=${tag}`);
-};
+export const countTags = async () => await get<number>("/tag/count");
 
-export const tagAPI = { get: getTags, put: putTag };
+export const addTag = async (tag: string, token: string) => {
+  return await post<Tag>(`/tag?tag=${tag}`, token);
+};
+export const getRelatedTags = async (
+  tag: string,
+  limit: number,
+  offset: number
+) => {
+  const query = { tag, limit, offset };
+  const url = queryString.stringifyUrl({
+    url: "/tag/related",
+    query,
+  });
+  return await get<string[]>(url);
+};
+export const updateTag = async (slug: string, label: string, token: string) =>
+  await put<Tag>(`/tag`, JSON.stringify({ slug, label }), token);
+export const deleteTag = async (slug: string, token: string) =>
+  await _delete<void>(`/tag/${slug}`, undefined, token);

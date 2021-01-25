@@ -1,103 +1,61 @@
-import React, { useState, useEffect, useCallback } from "react";
-import { PostProps } from "resources/models/PostProps";
-import { PostList } from "components/Post/PostList";
-import { Spinner, Button, Classes } from "@blueprintjs/core";
-import { postAPI } from "resources/api/post";
+import React, { useCallback } from "react";
+import { PostProps } from "resources/models/post";
+import { PostListConsumer } from "components/post/PostList";
+import { PostStackConsumer } from "components/post/PostStack";
+import { Box } from "@chakra-ui/react";
+
+import { TagIconSet } from "components/tag/TagIcon";
+import {
+  countSearchedPosts,
+  getCount,
+  getPosts,
+  searchPosts,
+} from "resources/api/post";
+import { PostsProvider } from "./PostProvider";
+import { LoadMoreConsumer } from "./PostConsumers";
 
 interface PostByTagsProp {
+  minimal?: boolean;
   tags: string[];
   showImage?: boolean;
   showTag?: boolean;
   filter?: (posts: PostProps[]) => PostProps[];
   limit?: number;
+  displayType: "stack" | "list";
+  includeAllTags?: boolean;
 }
 
-const pageRows = 10;
-
-export const PostByTagsLoading = () => {
-  return (
-    <div
-      className={Classes.SKELETON}
-      style={{ margin: "20px", height: "400px" }}
-    ></div>
-  );
-};
-
 export const PostByTags = (props: PostByTagsProp) => {
-  const [posts, setPosts] = useState<PostProps[]>();
-  const [filteredPosts, setFilteredPosts] = useState<PostProps[]>();
-  const [total, setTotal] = useState<number>();
-  const [loading, setLoading] = useState<boolean>();
-  const filter = useCallback(
-    (posts: PostProps[]) => {
-      const filteredPosts = props.filter ? props.filter(posts) : posts;
-      setFilteredPosts(filteredPosts);
-    },
-    [props]
-  );
-  const loadMore = useCallback(() => {
-    setLoading(true);
-    let index = 0;
-    if (posts != null) index = Math.floor(posts.length / pageRows);
-    const loadAsync = async () => {
-      try {
-        if (props.tags === undefined) return;
-        var newPosts = await postAPI.getPosts(index, pageRows, props.tags);
-        if (newPosts.length === 0) {
-          return;
-        }
-        const oldPosts =
-          posts?.filter(
-            (post) =>
-              newPosts.filter((newPost) => newPost.id === post.id).length === 0
-          ) ?? [];
-        newPosts = [...oldPosts, ...newPosts];
-
-        setPosts(newPosts);
-        filter(newPosts);
-        const total = await postAPI.getCount(props.tags);
-        setTotal(total);
-      } finally {
-        setLoading(false);
+  const icon = React.useMemo(() => {
+    if (props.tags.length === 1) {
+      const tag = props.tags[0];
+      if (tag in TagIconSet) return TagIconSet[tag];
+    }
+    return undefined;
+  }, [props]);
+  const get = useCallback(
+    (offset: number, limit: number) => {
+      if (props.includeAllTags) {
+        return getPosts(offset, limit, props.tags);
       }
-    };
-    loadAsync();
-  }, [props.tags, posts, filter]);
+      return searchPosts(offset, limit, props.tags, undefined);
+    },
+    [props.includeAllTags, props.tags]
+  );
+  const count = useCallback(() => {
+    if (props.includeAllTags) {
+      return getCount(props.tags);
+    }
+    return countSearchedPosts(props.tags, undefined);
+  }, [props.includeAllTags, props.tags]);
 
-  useEffect(() => {
-    if (props.tags === undefined) return;
-    postAPI.getPosts(0, pageRows, props.tags).then((posts) => {
-      setPosts(posts);
-      filter(posts);
-    });
-    postAPI.getCount(props.tags).then(setTotal);
-  }, [props.tags, filter]);
-  if (
-    filteredPosts === undefined ||
-    posts === undefined ||
-    total === undefined
-  ) {
-    return <PostByTagsLoading />;
-  }
   return (
-    <div>
-      <PostList
-        showImage={props.showImage}
-        showTag={props.showTag}
-        posts={filteredPosts}
-      />
-
-      {posts.length < total && (
-        <>
-          {loading ? (
-            <Spinner />
-          ) : (
-            <Button minimal onClick={loadMore}>
-              Xem thêm
-            </Button>
-          )}
-        </>
-      )}
-    </div>
+    <PostsProvider query={get} count={count} filter={props.filter} initLoad>
+      <Box w="100%" h="100%" overflowY="auto">
+        {props.displayType === "list" && <PostListConsumer icon={icon} />}
+        {props.displayType === "stack" && <PostStackConsumer icon={icon} />}
+        <LoadMoreConsumer />
+      </Box>
+    </PostsProvider>
   );
 };

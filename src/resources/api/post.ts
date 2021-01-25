@@ -1,56 +1,64 @@
-import { CreatePostRequest, UpdatePostRequest } from "resources/models/PostAPI";
 import { put, get, post, _delete } from "./helper";
-import { PostProps, PostMetric } from "resources/models/PostProps";
+import {
+  PostProps,
+  PostMetric,
+  UpdatePostRequest,
+  PostCountByAuthor,
+} from "resources/models/post";
 import { exceptions } from "./exceptions";
+interface FilterParameter {
+  createdBy?: string;
+}
 const queryString = require("query-string");
-const createPost = async (req: CreatePostRequest) => {
-  const post = await put<PostProps>(
-    `${process.env.REACT_APP_API_URL}/post`,
-    JSON.stringify(req)
-  );
-  if (post === undefined) return Promise.reject(exceptions.invalidFormat);
-  return post;
-};
 
-const updatePost = async (id: number, req: UpdatePostRequest) => {
-  var p = await post<UpdatePostRequest>(
-    `${process.env.REACT_APP_API_URL}/post/${id}`,
-    JSON.stringify(req)
+export const updatePost = async (
+  id: number,
+  req: UpdatePostRequest,
+  token: string
+) => {
+  var p = await put<UpdatePostRequest>(
+    `/post/${id}`,
+    JSON.stringify(req),
+    token
   );
-
   if (p === undefined) return Promise.reject(exceptions.invalidFormat);
   return p;
 };
 
-const deletePost = async (id: number) => {
-  return await _delete<any>(`${process.env.REACT_APP_API_URL}/post/${id}`);
+export const deletePost = async (id: number, token: string) => {
+  return await _delete<void>(`/post/${id}`, undefined, token);
 };
 
-const getPost = async (id: number) => {
-  const post = await get<PostProps>(
-    `${process.env.REACT_APP_API_URL}/post/${id}`
-  );
+export const getPost = async (id: number) => {
+  const post = await get<PostProps>(`/post/${id}`);
   if (post === undefined) return Promise.reject(exceptions.invalidFormat);
   return post;
 };
 
-const getPostMetric = async (id: number) => {
-  const metric = await get<PostMetric>(
-    `${process.env.REACT_APP_API_URL}/post/metric/${id}`
-  );
+export const getPostMetric = async (id: number) => {
+  const metric = await get<PostMetric>(`/post/metric/${id}`);
   if (metric === undefined) return Promise.reject(exceptions.invalidFormat);
   return metric;
 };
 
-const getPosts = async (
-  pageIndex: number,
-  pageRows: number,
-  tags: string[]
+export const getPosts = async (
+  offset: number,
+  limit: number,
+  tags: string[],
+  by?: string,
+  dir?: 0 | 1,
+  filter?: FilterParameter
 ) => {
-  var query: any = { pageIndex, pageRows, tags };
-
+  var query = {
+    offset,
+    limit,
+    tags,
+    by,
+    dir,
+    createdBy: filter?.createdBy,
+  };
   const url = queryString.stringifyUrl({
-    url: `${process.env.REACT_APP_API_URL}/post`,
+    url: `/post`,
     query,
   });
   const posts = await get<PostProps[]>(url);
@@ -58,51 +66,56 @@ const getPosts = async (
   return posts;
 };
 
-const getCount = async (tags: string[]) => {
-  var query = { tags };
+export const getCount = async (tags: string[], filter?: FilterParameter) => {
+  var query = { tags, createdBy: filter?.createdBy };
   const url = queryString.stringifyUrl({
-    url: `${process.env.REACT_APP_API_URL}/post/count`,
+    url: `/post/count`,
     query,
   });
   const total = await get<number>(url);
-  if (total === undefined) return Promise.reject(exceptions.invalidFormat);
   return total;
 };
 
-const attachTag = async (postId: number, tag: string) => {
-  return await put<void>(
-    `${process.env.REACT_APP_API_URL}/post/${postId}/tag?tag=${tag}`
-  );
-};
-const detachTag = async (postId: number, tag: string) => {
-  return await _delete<void>(
-    `${process.env.REACT_APP_API_URL}/post/${postId}/tag?tag=${tag}`
-  );
+export const getCountByAuthors = async (limit: number, offset: number) => {
+  var query = { limit, offset };
+  var url = queryString.stringifyUrl({
+    url: `/post/count/byAuthor`,
+    query,
+  });
+  return await get<PostCountByAuthor[]>(url);
 };
 
-const searchPosts = async (
-  pageIndex: number,
-  pageRows: number,
-  tags?: string[],
-  keywords?: string[]
+export const attachTag = async (postId: number, tag: string, token: string) => {
+  return await post<void>(`/post/${postId}/tag?tag=${tag}`, undefined, token);
+};
+export const detachTag = async (postId: number, tag: string, token: string) => {
+  return await _delete<void>(`/post/${postId}/tag?tag=${tag}`, token);
+};
+
+export const searchPosts = async (
+  offset: number,
+  limit: number,
+  tags: string[] | undefined,
+  keywords: string[] | undefined
 ) => {
-  const query = { pageIndex, pageRows, tags };
+  const query = { offset, limit, tags, keywords };
   const url = queryString.stringifyUrl({
-    url: `${process.env.REACT_APP_API_URL}/post/search`,
+    url: `/post/search`,
     query,
   });
   return await get<PostProps[]>(queryString.stringifyUrl({ query, url }));
 };
 
-export const postAPI = {
-  createPost,
-  updatePost,
-  deletePost,
-  getPost,
-  getPostMetric,
-  getPosts,
-  getCount,
-  attachTag,
-  detachTag,
-  searchPosts,
+export const countSearchedPosts = async (
+  tags: string[] | undefined,
+  keywords: string[] | undefined
+) => {
+  const url = queryString.stringifyUrl({
+    url: `/post/search/count`,
+    query: { tags, keywords },
+  });
+  return await get<number>(url);
 };
+
+export const increaseView = async (id: number) =>
+  await get(`/post/${id}/increaseView`);

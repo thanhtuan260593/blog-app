@@ -1,16 +1,16 @@
 import React, { useState, useEffect } from "react";
-import { PostProps } from "resources/models/PostProps";
-import { postAPI } from "resources/api/post";
-import { Classes } from "@blueprintjs/core";
-import { PostMeta } from "components/Post/Post";
-import { routes } from "constants/routes";
+import { PostProps } from "resources/models/post";
+import { PostMeta } from "components/post/PostDetail";
+import { generateIDParamPath } from "constants/routes";
 import { Link } from "react-router-dom";
+import { getPosts } from "resources/api/post";
+import { postRoutes } from "constants/postRoutes";
 
 const LoadingSlideshowItem = () => {
   return (
     <div className={`slide-item`}>
       <div>
-        <div className={`slide-item-image ${Classes.SKELETON}`}></div>
+        <div></div>
       </div>
     </div>
   );
@@ -22,10 +22,10 @@ const SlideshowItem = (props: PostProps) => {
     <div className="slide-item">
       <div>
         <div className="slide-item-image" style={{ background }}></div>
-        <Link to={routes.postDetail.getPath(props.id)}>
+        <Link to={generateIDParamPath(postRoutes.postDetail, props.id)}>
           <div className="header">
-            {props.subject}
-            <PostMeta post={{ ...props, tags: [] }} minimal />
+            {props.title}
+            <PostMeta size="sm" post={{ ...props, tags: [] }} />
           </div>
         </Link>
       </div>
@@ -37,8 +37,7 @@ export const Slideshow = () => {
   const [items, setItems] = useState<PostProps[]>();
   const [err, setErr] = useState<string>();
   useEffect(() => {
-    postAPI
-      .getPosts(0, 4, ["slideshow"])
+    getPosts(0, 4, ["slideshow"])
       .then((posts) => setItems(posts))
       .catch((err) => setErr(err));
   }, []);

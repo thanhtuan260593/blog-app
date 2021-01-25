@@ -1,97 +1,137 @@
-import React, { useCallback, useState } from "react";
-import { Button } from "@blueprintjs/core";
-import { CommentProps } from "resources/models/CommentProps";
-import { RichTextViewer } from "components/Editors/Editor";
-import { CommentList } from "./CommentList";
-import { commentAPI } from "resources/api/comment";
-import Avatar from "react-avatar";
-import { CreateComment } from "./CommentEditor";
+import React from "react";
+import { Avatar, VStack, HStack, Box, Icon, Flex } from "@chakra-ui/react";
+import Moment from "react-moment";
+import { CommentModel } from "resources/models/comment";
+import { CommentListContext, CommentListProvider } from "./CommentListProvider";
+import { CommentListConsumer } from "./CommentListConsumer";
+import { MdTimelapse } from "react-icons/md";
+import { useReactOidc } from "@axa-fr/react-oidc-context";
+import { getSubComments, getSubCommentsCount } from "resources/api/comment";
+import { createComment } from "resources/api/me";
+import {
+  CommentActionsConsumer,
+  CommentContentConsumer,
+  CommentCreatorConsumer,
+  CommentUpdaterConsumer,
+} from "./editor/CommentListConsumer";
+export interface EditingComment extends CommentModel {
+  isEditing: boolean;
+  isReplying: boolean;
+}
+interface CommentMetaProps {
+  createdBy?: string;
+  createdAt?: string;
+}
 
-export const CommentContent = (props: CommentProps) => {
+export const CommentMeta = ({ createdBy, createdAt }: CommentMetaProps) => {
   return (
-    <div className="comment-content">
-      <RichTextViewer initialValue={props.content} />
-    </div>
+    <Flex fontSize="sm" color="gray.400" justify="space-between">
+      <HStack>
+        <Avatar name={createdBy ?? "anonymous"} size="xs" />{" "}
+        <strong>{createdBy ?? "anonymous"} </strong>
+      </HStack>
+      {createdAt && (
+        <HStack spacing={1}>
+          <Icon as={MdTimelapse} />
+          <Moment fromNow>{createdAt}</Moment>
+        </HStack>
+      )}
+    </Flex>
   );
 };
 
-export const CommentMeta = (props: CommentProps) => {
-  return (
-    <div className="post-meta">
-      <Avatar
-        name={props.createdBy}
-        size="20"
-        round
-        textSizeRatio={1.5}
-        textMarginRatio={0.1}
-      />{" "}
-      <i>
-        <strong>Đăng bởi {props.createdBy} </strong> - Vào lúc{" "}
-        {new Date(props.createdAt).toLocaleString("vi-VN")}
-      </i>{" "}
-    </div>
+interface Props {
+  comment: CommentModel;
+  deleteComment?: (id: number) => Promise<void>;
+  updateComment?: (comment: CommentModel) => Promise<CommentModel>;
+}
+export const CommentBox = (props: Props) => {
+  const { oidcUser } = useReactOidc();
+  const { selectedComment, onSelect, deleteComment } = React.useContext(
+    CommentListContext
   );
-};
-
-export const CommentActions = (props: CommentProps) => {
-  const [showEditor, setShowEditor] = useState(false);
-  const [forceLoad, setForceLoad] = useState<() => Promise<CommentProps[]>>();
-  const loadSubComments = useCallback(
-    (pageIndex: number, pageRows: number) => {
-      return commentAPI.getSubComments(props.id, pageIndex, pageRows);
+  const loadComments = React.useCallback(
+    (index: number, row: number) =>
+      getSubComments(props.comment.id, index, row),
+    [props.comment.id]
+  );
+  const countComments = React.useCallback(
+    () => getSubCommentsCount(props.comment.id),
+    [props.comment.id]
+  );
+  const addComment = React.useCallback(
+    async (content: string) => {
+      const { id, postId } = props.comment;
+      const comment = await createComment(
+        { commentId: id, content, postId },
+        oidcUser.access_token
+      );
+      return comment;
     },
-    [props.id]
+    [props.comment, oidcUser]
   );
-  const countSubComments = useCallback(() => {
-    return commentAPI.getSubCommentsCount(props.id);
-  }, [props.id]);
-  const post = useCallback(
-    (content: string) =>
-      commentAPI.createComment({ content, commentId: props.id }),
-    [props.id]
-  );
-  const onSuccess = useCallback(() => {
-    setShowEditor(false);
-    setForceLoad(() => () => commentAPI.getSubComments(props.id, 0, 10));
-  }, [props.id]);
-  const onFail = useCallback((err) => console.log(err), []);
+  const handleDeleteComment = React.useCallback(() => {
+    if (deleteComment == null) return;
+    deleteComment(props.comment.id);
+  }, [deleteComment, props]);
+  const handleToggleEdit = React.useCallback(() => {
+    if (selectedComment && selectedComment.id === props.comment.id) {
+      onSelect({ ...selectedComment, isEditing: !selectedComment.isEditing });
+      return;
+    }
+    onSelect({ ...props.comment, isEditing: true, isReplying: false });
+  }, [selectedComment, props, onSelect]);
+  const handleToggleReply = React.useCallback(() => {
+    if (selectedComment && selectedComment.id === props.comment.id) {
+      onSelect({ ...selectedComment, isReplying: !selectedComment.isReplying });
+      return;
+    }
+    onSelect({ ...props.comment, isEditing: false, isReplying: true });
+  }, [props, onSelect, selectedComment]);
   return (
-    <div className="comment-action">
-      <div className="comment-action-item">
-        <Button
-          small
-          minimal
-          icon="comment"
-          onClick={() => setShowEditor((cur) => !cur)}
-        >
-          Bình luận
-        </Button>
-      </div>
-      <div className="sub-comment">
-        <CommentList
-          forceLoad={forceLoad}
-          load={loadSubComments}
-          count={countSubComments}
-        />
-        {showEditor && (
-          <CreateComment
-            postCallback={post}
-            onSuccess={onSuccess}
-            onFail={onFail}
-          />
-        )}
-      </div>
-    </div>
-  );
-};
-
-export const Comment = (props: CommentProps) => {
-  return (
-    <div className="comment">
-      <div className="comment-wrapper"></div>
-      <CommentMeta {...props} />
-      <CommentContent {...props} />
-      <CommentActions {...props} />
-    </div>
+    <VStack align="stretch">
+      <Box>
+        <CommentMeta {...props.comment} />
+      </Box>
+      <Box pl={3}>
+        <Box pl={3} borderLeft="1px" borderColor="gray.400">
+          <CommentUpdaterConsumer comment={props.comment} onBlur={onSelect} />
+          <CommentContentConsumer comment={props.comment} />
+          <Box>
+            <CommentListProvider
+              loadComments={loadComments}
+              countComment={countComments}
+              addComment={addComment}
+              deleteComment={props.deleteComment}
+              updateComment={props.updateComment}
+              total={props.comment.commentCount}
+            >
+              <CommentActionsConsumer
+                comment={props.comment}
+                onDelete={handleDeleteComment}
+                onToggleEdit={handleToggleEdit}
+                onToggleReply={handleToggleReply}
+              />
+              {selectedComment != null &&
+                selectedComment.id === props.comment.id &&
+                selectedComment.isReplying && (
+                  <Box>
+                    <CommentMeta createdBy={oidcUser?.profile?.sub} />
+                    <Box pl={3}>
+                      <Box pl={3} borderLeft="1px" borderColor="gray.400">
+                        <CommentCreatorConsumer
+                          onBlur={onSelect}
+                          autoFocus={true}
+                        />
+                      </Box>
+                    </Box>
+                  </Box>
+                )}
+              <CommentListConsumer />
+            </CommentListProvider>
+          </Box>
+        </Box>
+      </Box>
+    </VStack>
   );
 };

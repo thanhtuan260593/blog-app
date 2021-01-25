@@ -1,70 +1,59 @@
-import { get, put, _delete, post } from "./helper";
-import { CommentProps } from "resources/models/CommentProps";
-import {
-  CreateCommentRequest,
-  UpdateCommentRequest,
-} from "resources/models/CommentAPI";
+import { get, _delete, put } from "./helper";
+import { CommentModel, UpdateCommentRequest } from "resources/models/comment";
 import { exceptions } from "./exceptions";
 const queryString = require("query-string");
-const baseURL = `${process.env.REACT_APP_API_URL}/comment`;
-const getPostComments = async (
+const baseURL = `/comment`;
+export const getPostComments = async (
   postId: number,
-  pageIndex?: number,
-  pageRows?: number
+  offset?: number,
+  limit?: number
 ) => {
-  const query = { pageIndex, pageRows };
+  const query = { offset, limit };
   const url = `${baseURL}/post/${postId}`;
-  const comments = await get<CommentProps[]>(
+  const comments = await get<CommentModel[]>(
     queryString.stringifyUrl({ url, query })
   );
   if (comments == null) return Promise.reject(exceptions.invalidFormat);
   return comments;
 };
 
-const getPostCommentsCount = async (postId: number) => {
+export const getPostCommentsCount = async (postId: number) => {
   const count = await get<number>(`${baseURL}/post/${postId}/count`);
   if (count == null) return Promise.reject(exceptions.invalidFormat);
   return count;
 };
 
-const getSubComments = async (
+export const getSubComments = async (
   commentId: number,
-  pageIndex?: number,
-  pageRows?: number
+  offset?: number,
+  limit?: number
 ) => {
-  const query = { pageIndex, pageRows };
+  const query = { offset, limit };
   const url = `${baseURL}/${commentId}/comments`;
-  const comments = await get<CommentProps[]>(
+  const comments = await get<CommentModel[]>(
     queryString.stringifyUrl({ url, query })
   );
   if (comments == null) return Promise.reject(exceptions.invalidFormat);
   return comments;
 };
 
-const getSubCommentsCount = async (commentId: number) => {
+export const getSubCommentsCount = async (commentId: number) => {
   const count = await get<number>(`${baseURL}/${commentId}/comments/count`);
   if (count == null) return Promise.reject(exceptions.invalidFormat);
   return count;
 };
 
-const createComment = async (comment: CreateCommentRequest) => {
-  await put(`${baseURL}`, JSON.stringify(comment));
+export const updateComment = async (
+  comment: UpdateCommentRequest,
+  token: string
+) => {
+  return await put<CommentModel>(
+    `/comment/${comment.id}`,
+    JSON.stringify(comment),
+    token
+  );
 };
 
-const updateComment = async (comment: UpdateCommentRequest) => {
-  await post(`${baseURL}/${comment.id}`, JSON.stringify(comment));
-};
-
-const deleteComment = async (commentId: number) => {
-  await _delete(`${baseURL}/${commentId}`);
-};
-
-export const commentAPI = {
-  getPostComments,
-  getPostCommentsCount,
-  getSubComments,
-  getSubCommentsCount,
-  createComment,
-  updateComment,
-  deleteComment,
+export const deleteComment = async (commentId: number, token: string) => {
+  await _delete(`/comment/${commentId}`, undefined, token);
 };
