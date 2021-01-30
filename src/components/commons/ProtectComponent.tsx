@@ -7,10 +7,10 @@ interface Props {
   owner?: string;
   scopes?: string[];
 }
-
-export const ProtectedComponent = (props: Props) => {
+const useAuthorize = (props: Props) => {
   const { oidcUser, isEnabled } = useReactOidc();
   const { isAuthorized, isAuthenticated } = React.useMemo(() => {
+    if (!isEnabled) return { isAuthenticated: false, isAuthorized: false };
     if (oidcUser == null) return { isAuthorized: false };
     const isAuthenticated = true;
     if (props.owner != null && oidcUser.profile.sub !== props.owner)
@@ -22,9 +22,19 @@ export const ProtectedComponent = (props: Props) => {
       );
     }, true);
     return { isAuthorized, isAuthenticated };
-  }, [props.scopes, oidcUser, props.owner]);
-  if (isEnabled && !isAuthenticated) return <NotAuthenticated />;
-  if (isEnabled && !isAuthorized) return <NotAuthorized />;
+  }, [props.scopes, oidcUser, props.owner, isEnabled]);
+  return { isAuthorized, isAuthenticated };
+};
+
+export const ProtectedComponent = (props: Props) => {
+  const { isAuthorized, isAuthenticated } = useAuthorize(props);
+  if (!isAuthenticated) return <NotAuthenticated />;
+  if (!isAuthorized) return <NotAuthorized />;
+  return <>{props.children}</>;
+};
+export const SoftProtectedComponent = (props: Props) => {
+  const { isAuthorized, isAuthenticated } = useAuthorize(props);
+  if (!isAuthenticated || !isAuthorized) return <></>;
   return <>{props.children}</>;
 };
 export const withAuthorized = (WrappedComponent: ComponentType) => (

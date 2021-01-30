@@ -88,6 +88,21 @@ export const CommentBox = (props: Props) => {
     }
     onSelect({ ...props.comment, isEditing: false, isReplying: true });
   }, [props, onSelect, selectedComment]);
+  const isEditing = React.useMemo(
+    () =>
+      selectedComment != null &&
+      selectedComment.id === props.comment.id &&
+      selectedComment.isEditing,
+    [selectedComment, props]
+  );
+  const isReplying = React.useMemo(
+    () =>
+      selectedComment != null &&
+      selectedComment.id === props.comment.id &&
+      selectedComment.isReplying,
+    [selectedComment, props]
+  );
+  console.log(isEditing, selectedComment);
   return (
     <VStack align="stretch">
       <Box>
@@ -111,22 +126,21 @@ export const CommentBox = (props: Props) => {
                 onDelete={handleDeleteComment}
                 onToggleEdit={handleToggleEdit}
                 onToggleReply={handleToggleReply}
+                isEditing={isEditing}
               />
-              {selectedComment != null &&
-                selectedComment.id === props.comment.id &&
-                selectedComment.isReplying && (
-                  <Box>
-                    <CommentMeta createdBy={oidcUser?.profile?.sub} />
-                    <Box pl={3}>
-                      <Box pl={3} borderLeft="1px" borderColor="gray.400">
-                        <CommentCreatorConsumer
-                          onBlur={onSelect}
-                          autoFocus={true}
-                        />
-                      </Box>
+              {isReplying && (
+                <Box>
+                  <CommentMeta createdBy={oidcUser?.profile?.sub} />
+                  <Box pl={3}>
+                    <Box pl={3} borderLeft="1px" borderColor="gray.400">
+                      <CommentCreatorConsumer
+                        onBlur={onSelect}
+                        autoFocus={true}
+                      />
                     </Box>
                   </Box>
-                )}
+                </Box>
+              )}
               <CommentListConsumer />
             </CommentListProvider>
           </Box>

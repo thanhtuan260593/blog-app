@@ -25,7 +25,7 @@ import { CommentListConsumer } from "components/comment/CommentListConsumer";
 import { CommentListProvider } from "components/comment/CommentListProvider";
 import { useReactOidc } from "@axa-fr/react-oidc-context";
 import { getPostComments, getPostCommentsCount } from "resources/api/comment";
-import { createComment, updateComment } from "resources/api/me";
+import { createComment, deleteComment, updateComment } from "resources/api/me";
 import { PostMeta, PostSocial } from "./PostOverview";
 import { CommentCreatorConsumer } from "components/comment/editor/CommentListConsumer";
 import { CommentModel } from "resources/models/comment";
@@ -75,6 +75,10 @@ export const PostDetail = ({ post, reloadMetric }: PostDetailProps) => {
       await updateComment(comment, oidcUser.access_token),
     [oidcUser]
   );
+  const handleDeleteComment = useCallback(
+    async (id: number) => await deleteComment(id, oidcUser.access_token),
+    [oidcUser]
+  );
 
   return (
     <VStack align="stretch" justify="stretch">
@@ -118,6 +122,7 @@ export const PostDetail = ({ post, reloadMetric }: PostDetailProps) => {
         countComment={countComments}
         addComment={handleAddComment}
         updateComment={handleUpdateComment}
+        deleteComment={handleDeleteComment}
       >
         <PostCommentSection />
       </CommentListProvider>

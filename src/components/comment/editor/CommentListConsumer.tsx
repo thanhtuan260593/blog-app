@@ -1,6 +1,8 @@
 import { Box, Button, HStack, Icon, useToast } from "@chakra-ui/react";
 import MarkdownPreview from "@uiw/react-markdown-preview";
 import { BlurBox } from "components/commons/BlurBox";
+import { SoftProtectedComponent } from "components/commons/ProtectComponent";
+import { scopes } from "constants/scopes";
 import React from "react";
 import { MdComment, MdDelete, MdEdit, MdReply } from "react-icons/md";
 import { CommentModel } from "resources/models/comment";
@@ -98,7 +100,7 @@ export const CommentUpdaterConsumer = ({
   )
     return <></>;
   return (
-    <BlurBox onBlur={onBlur}>
+    <BlurBox onActuallyBlur={onBlur}>
       <CommentEditor
         autoFocus
         onSave={handleSave}
@@ -112,14 +114,16 @@ interface ActionProps extends CommentProps {
   onToggleEdit: () => void;
   onDelete: () => void;
   onToggleReply: () => void;
+  isEditing: boolean;
 }
-export const CommentActionsConsumer = ({ comment, ...props }: ActionProps) => {
-  const {
-    comments,
-    loadMore,
-    selectedComment,
-    clearComments,
-  } = React.useContext(CommentListContext);
+export const CommentActionsConsumer = ({
+  comment,
+  isEditing,
+  ...props
+}: ActionProps) => {
+  const { comments, loadMore, clearComments } = React.useContext(
+    CommentListContext
+  );
   const handleToggleExpand = React.useCallback(() => {
     if (comments == null) {
       loadMore();
@@ -127,13 +131,7 @@ export const CommentActionsConsumer = ({ comment, ...props }: ActionProps) => {
     }
     clearComments();
   }, [clearComments, comments, loadMore]);
-  const isEditing = React.useMemo(() => {
-    return (
-      selectedComment != null &&
-      selectedComment.id === comment.id &&
-      selectedComment.isEditing
-    );
-  }, [selectedComment, comment]);
+
   return (
     <Box>
       <HStack justify="space-between">
@@ -150,27 +148,37 @@ export const CommentActionsConsumer = ({ comment, ...props }: ActionProps) => {
           )}
         </Box>
         <HStack spacing={4}>
-          {isEditing && (
-            <Button
-              size="sm"
-              variant="link"
-              colorScheme="red"
-              leftIcon={<Icon as={MdDelete} />}
-              onClick={props.onDelete}
-            >
-              Xóa
-            </Button>
-          )}
-          {!isEditing && (
-            <Button
-              size="sm"
-              variant="link"
-              leftIcon={<Icon as={MdEdit} />}
-              onClick={props.onToggleEdit}
-            >
-              Sửa
-            </Button>
-          )}
+          <SoftProtectedComponent
+            owner={comment.createdBy}
+            scopes={[scopes.admin]}
+          >
+            {isEditing && (
+              <Button
+                size="sm"
+                variant="link"
+                colorScheme="red"
+                leftIcon={<Icon as={MdDelete} />}
+                onClick={props.onDelete}
+              >
+                Xóa
+              </Button>
+            )}
+          </SoftProtectedComponent>
+          <SoftProtectedComponent
+            owner={comment.createdBy}
+            scopes={[scopes.admin]}
+          >
+            {!isEditing && (
+              <Button
+                size="sm"
+                variant="link"
+                leftIcon={<Icon as={MdEdit} />}
+                onClick={props.onToggleEdit}
+              >
+                Sửa
+              </Button>
+            )}
+          </SoftProtectedComponent>
           {!isEditing && (
             <Button
               size="sm"

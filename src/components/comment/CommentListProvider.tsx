@@ -116,7 +116,7 @@ export const CommentListProvider = (props: ProviderProps) => {
     () => (props.addComment ? addCommentCallback : undefined),
     [props, addCommentCallback]
   );
-  const updateComment = React.useCallback(
+  const updateCommentCallback = React.useCallback(
     async (updatedComment: CommentModel) => {
       if (props.updateComment == null) throw new Error();
       try {
@@ -140,8 +140,12 @@ export const CommentListProvider = (props: ProviderProps) => {
     },
     [comments, props, reload]
   );
+  const updateComment = React.useMemo(() => {
+    if (props.updateComment == null) return undefined;
+    return updateCommentCallback;
+  }, [updateCommentCallback, props]);
   const deleteComment = React.useMemo(() => {
-    if (props.deleteComment == null) return;
+    if (props.deleteComment == null) return undefined;
     return async (id: number) => {
       if (props.deleteComment == null) throw new Error();
       try {
@@ -158,6 +162,7 @@ export const CommentListProvider = (props: ProviderProps) => {
       }
     };
   }, [props]);
+
   const onCommentChange = React.useCallback(
     (comment: CommentModel) => {
       if (comments == null) {

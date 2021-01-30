@@ -40,7 +40,7 @@ export const get = async <T>(path: string) => request<T>("GET", path, null);
 export const post = async <T>(path: string, body?: string, token?: string) =>
   request<T>("POST", path, body, token);
 export const _delete = async <T>(path: string, body?: string, token?: string) =>
-  request<T>("DELETE", path, null);
+  request<T>("DELETE", path, body, token);
 export const put = async <T>(path: string, body?: string, token?: string) => {
   return await request<T>("PUT", path, body, token);
 };
